@@ -27,8 +27,13 @@
     "test": "jest"
   },
   "dependencies": {
+    "@account-abstraction/contracts": "^0.6.0",
+    "@account-abstraction/sdk": "^0.6.0",
     "@metamask/snaps-sdk": "^4.0.0",
-    "buffer": "^6.0.3"
+    "buffer": "^6.0.3",
+    "ethers": "^5.7.2",
+    "node-fetch": "^3.3.2",
+    "axios": "1.7.2"
   },
   "devDependencies": {
     "@jest/globals": "^29.5.0",
