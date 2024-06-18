@@ -6,6 +6,7 @@ import {
   ReconnectButton,
   SendHelloButton,
   Card,
+  AACard,
 } from '../components';
 import { defaultSnapOrigin } from '../config';
 import {
@@ -190,6 +191,7 @@ const Index = () => {
             !shouldDisplayReconnectButton(installedSnap)
           }
         />
+        {installedSnap && <AACard />}
         <Notice>
           <p>
             Please note that the <b>snap.manifest.json</b> and{' '}

@@ -1,5 +1,9 @@
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
+
+import { useInvokeSnap } from '../hooks';
+// import { sendUserOpToBundler } from '../utils';
 
 type CardProps = {
   content: {
@@ -47,6 +51,38 @@ const Description = styled.div`
   margin-top: 2.4rem;
   margin-bottom: 2.4rem;
 `;
+const TargetInput = styled.input`
+  margin-top: 10px;
+  font-size: 18px;
+  width: 100%;
+`;
+
+const AmountInput = styled.input`
+  margin-top: 10px;
+  font-size: 18px;
+  width: 100%;
+`;
+
+const AAText = styled.div`
+  margin-bottom: 1.2rem;
+`;
+
+const Spacer = styled.div`
+  margin-top: 20px;
+`;
+
+const Center = styled.div`
+  text-align: center;
+`;
+
+const Button = styled.button`
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+  ${({ theme }) => theme.mediaQueries.small} {
+    width: 100%;
+  }
+`;
 
 export const Card = ({ content, disabled = false, fullWidth }: CardProps) => {
   const { title, description, button } = content;
@@ -56,5 +92,118 @@ export const Card = ({ content, disabled = false, fullWidth }: CardProps) => {
       <Description>{description}</Description>
       {button}
     </CardWrapper>
+  );
+};
+
+export const AACard = () => {
+  const invokeSnap = useInvokeSnap();
+  const [eoaAddress, setEOAAddress] = useState('');
+  const [eoaBalance, setEOABalance] = useState('');
+  const [address, setAddress] = useState('');
+  const [balance, setBalance] = useState('');
+  const [target, setTarget] = useState('');
+  const [ethAmount, setEthAmount] = useState('');
+
+  const handleConnectAAClick = async () => {
+    try {
+      setEOAAddress((await invokeSnap({ method: 'connect_eoa' })) as string);
+      setEOABalance((await invokeSnap({ method: 'balance_eoa' })) as string);
+      setAddress((await invokeSnap({ method: 'connect' })) as string);
+      setBalance((await invokeSnap({ method: 'balance' })) as string);
+    } catch (er) {
+      console.error(er);
+    }
+  };
+
+  const handleReloadBalancesClick = async () => {
+    try {
+      setEOABalance((await invokeSnap({ method: 'balance_eoa' })) as string);
+      setBalance((await invokeSnap({ method: 'balance' })) as string);
+    } catch (er) {
+      console.error(er);
+    }
+  };
+
+  const handleTargetChange = (ev: React.FocusEvent<HTMLInputElement>) => {
+    setTarget(ev.currentTarget.value);
+  };
+
+  const handleEthAmountChange = (ev: React.FocusEvent<HTMLInputElement>) => {
+    setEthAmount(ev.currentTarget.value);
+  };
+
+  const handleTransferFromAAClick = async () => {
+    if (!target || !ethAmount) {
+      // eslint-disable-next-line no-alert
+      alert('enter target and amount.');
+      return;
+    }
+
+    try {
+      const ethValue = `${ethAmount}`;
+      const userOpHash = (await invokeSnap({
+        method: 'transfer',
+        params: {
+          target,
+          ethValue,
+        },
+      })) as string;
+      console.log(`request bundler body${userOpHash}`);
+      // await sendUserOpToBundler(reqBody);
+      // eslint-disable-next-line no-alert
+      alert(`tx has been sent!: userOpHash: ${userOpHash}`);
+    } catch (er) {
+      console.error(er);
+    }
+  };
+
+  return (
+    <>
+      {!address && (
+        <CardWrapper fullWidth={true} disabled={false}>
+          <Center>
+            <Button onClick={handleConnectAAClick}>
+              Connect Abstract Account
+            </Button>
+          </Center>
+        </CardWrapper>
+      )}
+      {address && (
+        <>
+          <CardWrapper fullWidth={true} disabled={false}>
+            <Title>Your EOA Account </Title>
+            <AAText>Address: {eoaAddress}</AAText>
+            <AAText>Balance: {eoaBalance}</AAText>
+          </CardWrapper>
+          <CardWrapper fullWidth={true} disabled={false}>
+            <Title>Your Abstract Account 🎉</Title>
+            <AAText>Address: {address}</AAText>
+            <AAText>Balance: {balance}</AAText>
+          </CardWrapper>
+          <CardWrapper fullWidth={true} disabled={false}>
+            <Button onClick={handleReloadBalancesClick}>Reload Balances</Button>
+          </CardWrapper>
+          <CardWrapper fullWidth={true} disabled={false}>
+            <Title>Transfer from Abstract Account</Title>
+            <div>
+              <TargetInput
+                type="text"
+                placeholder="Target"
+                onChange={handleTargetChange}
+              />
+              <AmountInput
+                type="number"
+                placeholder="Amount"
+                onChange={handleEthAmountChange}
+              />
+            </div>
+            <Spacer />
+            <Button onClick={handleTransferFromAAClick}>
+              Transfer from AA
+            </Button>
+          </CardWrapper>
+        </>
+      )}
+    </>
   );
 };

@@ -17,6 +17,13 @@ module.exports = {
         '@typescript-eslint/unbound-method': 'off',
       },
     },
+    {
+      files: ['**/*.{ts,tsx}'],
+      extends: ['@metamask/eslint-config-typescript'],
+      rules: {
+        '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+      },
+    },
   ],
 
   ignorePatterns: ['!.eslintrc.js', 'dist/'],
