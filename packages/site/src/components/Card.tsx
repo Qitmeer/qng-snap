@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import styled from 'styled-components';
 
 import { useInvokeSnap } from '../hooks';
-// import { sendUserOpToBundler } from '../utils';
 
 type CardProps = {
   content: {
@@ -148,10 +147,9 @@ export const AACard = () => {
           ethValue,
         },
       })) as string;
-      console.log(`request bundler body${userOpHash}`);
-      // await sendUserOpToBundler(reqBody);
+      console.log(`tx has been sent!: userOpHash ${userOpHash}`);
       // eslint-disable-next-line no-alert
-      alert(`tx has been sent!: userOpHash: ${userOpHash}`);
+      alert(`tx has been sent!: userOpHash`);
     } catch (er) {
       console.error(er);
     }
