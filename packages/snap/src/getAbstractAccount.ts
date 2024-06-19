@@ -2,6 +2,7 @@
 // import type { UserOperationStruct } from '@account-abstraction/contracts';
 import {
   SimpleAccountAPI,
+  HttpRpcClient,
   // PaymasterAPI,
   // calcPreVerificationGas,
 } from '@account-abstraction/sdk';
@@ -83,14 +84,15 @@ import { ethers } from 'ethers';
 // }
 
 // qng testnet deployed
-// entryPoint Contract https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/core/EntryPoint.sol
+// entryPoint Contract https://github.com/eth-infinitism/account-abstraction/blob/v0.6.0/contracts/core/EntryPoint.sol
 // deployed by deterministic-deployment-proxy https://github.com/Arachnid/deterministic-deployment-proxy.git
-const entryPointAddress = '0x0000000071727De22E5E9d8BAf0edAc6f37da032';
+const entryPointAddress = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789';
 // const paymasterAPI = new VerifyingPaymasterAPI(paymasterUrl, entryPointAddress);
-// account factory Contract https://github.com/eth-infinitism/account-abstraction/blob/develop/contracts/samples/SimpleAccountFactory.sol
+// account factory Contract https://github.com/eth-infinitism/account-abstraction/blob/v0.6.0/contracts/samples/SimpleAccountFactory.sol
 // deployed by deterministic-deployment-proxy https://github.com/Arachnid/deterministic-deployment-proxy.git
-const factoryAddress = '0x12a4F339F74c08F23D8033dF4457eC253DC9AdC0';
+const factoryAddress = '0x9406cc6185a346906296840746125a0e44976454';
 // const paymasterUrl = ''; // Optional
+const bundlerUrl = 'http://127.0.0.1:3000/rpc';
 export const getAbstractAccount = async (): Promise<SimpleAccountAPI> => {
   const provider = new ethers.providers.Web3Provider(ethereum as any);
   await provider.send('eth_requestAccounts', []);
@@ -104,3 +106,12 @@ export const getAbstractAccount = async (): Promise<SimpleAccountAPI> => {
   });
   return aa;
 };
+
+
+export const bundlerProvider = async (): Promise<HttpRpcClient> => {
+  const provider = new ethers.providers.Web3Provider(ethereum as any);
+  const net = await provider.getNetwork()
+  return new HttpRpcClient(bundlerUrl, entryPointAddress, net.chainId)
+}
+
+
