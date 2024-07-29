@@ -1,3 +1,5 @@
+// import { Buffer } from 'buffer';
+// import { hash, hash160 } from 'qitmeer-js';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
@@ -100,14 +102,22 @@ export const AACard = () => {
   const [eoaBalance, setEOABalance] = useState('');
   const [address, setAddress] = useState('');
   const [balance, setBalance] = useState('');
+  const [qngAddress, setQngAddress] = useState('');
   const [target, setTarget] = useState('');
+  const [txid, setTxid] = useState('');
   const [ethAmount, setEthAmount] = useState('');
+
+  // const Hash160 = (pubHex: string): string => {
+  //   const h16 = hash.hash160(pubHex);
+  //   return h16.toString('hex');
+  // };
 
   const handleConnectAAClick = async () => {
     try {
       setEOAAddress((await invokeSnap({ method: 'connect_eoa' })) as string);
       setEOABalance((await invokeSnap({ method: 'balance_eoa' })) as string);
       setAddress((await invokeSnap({ method: 'connect' })) as string);
+      setQngAddress((await invokeSnap({ method: 'connect_qng' })) as string);
       setBalance((await invokeSnap({ method: 'balance' })) as string);
     } catch (er) {
       console.error(er);
@@ -125,6 +135,10 @@ export const AACard = () => {
 
   const handleTargetChange = (ev: React.FocusEvent<HTMLInputElement>) => {
     setTarget(ev.currentTarget.value);
+  };
+
+  const handleTxIdChange = (ev: React.FocusEvent<HTMLInputElement>) => {
+    setTxid(ev.currentTarget.value);
   };
 
   const handleEthAmountChange = (ev: React.FocusEvent<HTMLInputElement>) => {
@@ -155,6 +169,31 @@ export const AACard = () => {
     }
   };
 
+  const handleTransferFromQngClick = async () => {
+    if (!txid || !target || !ethAmount) {
+      // eslint-disable-next-line no-alert
+      alert('enter txid and target and amount.');
+      return;
+    }
+
+    try {
+      const ethValue = `${ethAmount}`;
+      const rawTx = (await invokeSnap({
+        method: 'utxoTransfer',
+        params: {
+          txid,
+          to: target,
+          amount: ethValue,
+        },
+      })) as string;
+      // eslint-disable-next-line no-alert
+      alert(`tx sign succ`);
+      console.log(rawTx);
+    } catch (er) {
+      console.error(er);
+    }
+  };
+
   return (
     <>
       {!address && (
@@ -179,6 +218,10 @@ export const AACard = () => {
             <AAText>Balance: {balance}</AAText>
           </CardWrapper>
           <CardWrapper fullWidth={true} disabled={false}>
+            <Title>Your Qng Account 🎉</Title>
+            <AAText>P2KH Address: {qngAddress}</AAText>
+          </CardWrapper>
+          <CardWrapper fullWidth={true} disabled={false}>
             <Button onClick={handleReloadBalancesClick}>Reload Balances</Button>
           </CardWrapper>
           <CardWrapper fullWidth={true} disabled={false}>
@@ -198,6 +241,31 @@ export const AACard = () => {
             <Spacer />
             <Button onClick={handleTransferFromAAClick}>
               Transfer from AA
+            </Button>
+          </CardWrapper>
+
+          <CardWrapper fullWidth={true} disabled={false}>
+            <Title>Transfer from Qng Account</Title>
+            <div>
+              <TargetInput
+                type="text"
+                placeholder="txid"
+                onChange={handleTxIdChange}
+              />
+              <TargetInput
+                type="text"
+                placeholder="Target"
+                onChange={handleTargetChange}
+              />
+              <AmountInput
+                type="number"
+                placeholder="Amount"
+                onChange={handleEthAmountChange}
+              />
+            </div>
+            <Spacer />
+            <Button onClick={handleTransferFromQngClick}>
+              Transfer from UTXO
             </Button>
           </CardWrapper>
         </>

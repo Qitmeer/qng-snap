@@ -4,8 +4,8 @@ import { ethers } from 'ethers';
 
 import { getAbstractAccount } from './getAbstractAccount';
 import { getBalance } from './getBalance';
+import { getQngAddress, qngTransfer } from './qng';
 import { transfer } from './transfer';
-
 // export const changeNetwork = async () => {
 //   await ethereum.request({
 //     method: 'wallet_switchEthereumChain',
@@ -44,6 +44,8 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
   switch (request.method) {
     case 'connect_eoa':
       return await getEoaAddress();
+    case 'connect_qng':
+      return await getQngAddress();
     case 'balance_eoa':
       return await getBalance(await getEoaAddress());
     case 'connect':
@@ -56,6 +58,12 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         [key: string]: string;
       };
       return await transfer(target as string, ethValue as string);
+    case 'utxoTransfer':
+      // eslint-disable-next-line no-case-declarations
+      const { txid, to, amount } = request?.params as unknown as {
+        [key: string]: string;
+      };
+      return await qngTransfer(txid as string, to as string, amount as string);
     case 'hello':
       return snap.request({
         method: 'snap_dialog',
