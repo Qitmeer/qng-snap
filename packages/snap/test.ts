@@ -1,6 +1,7 @@
 const createHash = require('create-hash');
-const qitmeer = require('qitmeer-js');
 const { Buffer } = require('safe-buffer');
+
+const qitmeer = require('./src/qitmeerlib');
 
 const trimHexPrefix = (key: string) =>
   key.startsWith('0x') ? key.substring(2) : key;

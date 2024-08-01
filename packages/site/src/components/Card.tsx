@@ -104,7 +104,6 @@ export const AACard = () => {
   const [balance, setBalance] = useState('');
   const [qngAddress, setQngAddress] = useState('');
   const [target, setTarget] = useState('');
-  const [txid, setTxid] = useState('');
   const [ethAmount, setEthAmount] = useState('');
 
   // const Hash160 = (pubHex: string): string => {
@@ -137,10 +136,6 @@ export const AACard = () => {
     setTarget(ev.currentTarget.value);
   };
 
-  const handleTxIdChange = (ev: React.FocusEvent<HTMLInputElement>) => {
-    setTxid(ev.currentTarget.value);
-  };
-
   const handleEthAmountChange = (ev: React.FocusEvent<HTMLInputElement>) => {
     setEthAmount(ev.currentTarget.value);
   };
@@ -170,7 +165,7 @@ export const AACard = () => {
   };
 
   const handleTransferFromQngClick = async () => {
-    if (!txid || !target || !ethAmount) {
+    if (!target || !ethAmount) {
       // eslint-disable-next-line no-alert
       alert('enter txid and target and amount.');
       return;
@@ -181,7 +176,7 @@ export const AACard = () => {
       const rawTx = (await invokeSnap({
         method: 'utxoTransfer',
         params: {
-          txid,
+          from: qngAddress,
           to: target,
           amount: ethValue,
         },
@@ -247,11 +242,6 @@ export const AACard = () => {
           <CardWrapper fullWidth={true} disabled={false}>
             <Title>Transfer from Qng Account</Title>
             <div>
-              <TargetInput
-                type="text"
-                placeholder="txid"
-                onChange={handleTxIdChange}
-              />
               <TargetInput
                 type="text"
                 placeholder="Target"

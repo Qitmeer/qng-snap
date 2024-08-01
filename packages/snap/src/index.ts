@@ -60,10 +60,10 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       return await transfer(target as string, ethValue as string);
     case 'utxoTransfer':
       // eslint-disable-next-line no-case-declarations
-      const { txid, to, amount } = request?.params as unknown as {
+      const { from, to, amount } = request?.params as unknown as {
         [key: string]: string;
       };
-      return await qngTransfer(txid as string, to as string, amount as string);
+      return await qngTransfer(from as string, to as string, amount as string);
     case 'hello':
       return snap.request({
         method: 'snap_dialog',
