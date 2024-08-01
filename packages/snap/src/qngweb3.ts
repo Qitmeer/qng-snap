@@ -145,7 +145,7 @@ export const qngTransferUtxo = async (
   txsnr.setVersion(1);
   // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < needUtxos.length; i++) {
-    const utxo = needUtxos[0] as UTXO;
+    const utxo = needUtxos[i] as UTXO;
     txsnr.addInput(utxo.txid, utxo.outputindex);
   }
   txsnr.addOutput(to, amount);
@@ -171,7 +171,7 @@ export const transferUTXOToEvm = async (
   txsnr.setVersion(1);
   // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < needUtxos.length; i++) {
-    const utxo = needUtxos[0] as UTXO;
+    const utxo = needUtxos[i] as UTXO;
     txsnr.addInput(utxo.txid, utxo.outputindex);
   }
   txsnr.addOutput(to, amount);
@@ -199,7 +199,7 @@ export const qngTransferEvmToUtxo = async (
   txsnr.setVersion(1);
   // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < needUtxos.length; i++) {
-    const utxo = needUtxos[0] as UTXO;
+    const utxo = needUtxos[i] as UTXO;
     txsnr.addInput(utxo.txid, utxo.outputindex);
   }
   txsnr.addOutput(to, amount);
