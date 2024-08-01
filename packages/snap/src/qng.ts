@@ -10,19 +10,18 @@ export const trimHexPrefix = (key: string) =>
 export const CRYPTO_CURVE = 'secp256k1';
 
 export const getQngAccount = async (): Promise<SLIP10Node> => {
-  // This example uses Dogecoin, which has coin_type 3.
-  // This example uses Dogecoin, which has a derivation path starting with m/44'/3'.
-  const dogecoinNode = await snap.request({
+  const qngNode = await snap.request({
     method: 'snap_getBip32Entropy',
     params: {
       // The path and curve must be specified in the initial permissions.
+      // 813 is meer bip44 network code
       path: ['m', "44'", "813'"],
       curve: 'secp256k1',
     },
   });
 
   // Next, create an instance of a SLIP-10 node for the Dogecoin node.
-  const qngSlip10Node = await SLIP10Node.fromJSON(dogecoinNode);
+  const qngSlip10Node = await SLIP10Node.fromJSON(qngNode);
   // m/44'/813'/0
   const accountKey0 = await qngSlip10Node.derive(['bip32:0']);
   return accountKey0;
