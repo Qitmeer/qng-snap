@@ -1,7 +1,7 @@
 import { SLIP10Node } from '@metamask/key-tree';
 import { Buffer } from 'buffer';
+import { ec, hash, address, networks } from 'qitmeer-js';
 
-import { ec, hash, address, networks } from './qitmeerlib';
 import { qngTransferUtxo } from './qngweb3';
 
 export const trimHexPrefix = (key: string) =>

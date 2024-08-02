@@ -1,6 +1,5 @@
 import { ethers } from 'ethers';
-
-import { txsign, networks } from './qitmeerlib';
+import { txsign, networks } from 'qitmeer-js';
 
 // jsonrpc Request
 // {
