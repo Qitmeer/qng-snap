@@ -12,7 +12,6 @@ import { transfer } from './transfer';
 //     params: [{ chainId: '0x1fc3' }],
 //   });
 // };
-
 export const getEoaAddress = async (): Promise<string> => {
   const provider = new ethers.providers.Web3Provider(ethereum as any);
   const accounts = await provider.send('eth_requestAccounts', []);

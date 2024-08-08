@@ -107,11 +107,8 @@ export const getAbstractAccount = async (): Promise<SimpleAccountAPI> => {
   return aa;
 };
 
-
 export const bundlerProvider = async (): Promise<HttpRpcClient> => {
   const provider = new ethers.providers.Web3Provider(ethereum as any);
-  const net = await provider.getNetwork()
-  return new HttpRpcClient(bundlerUrl, entryPointAddress, net.chainId)
-}
-
-
+  const net = await provider.getNetwork();
+  return new HttpRpcClient(bundlerUrl, entryPointAddress, net.chainId);
+};

@@ -14,7 +14,6 @@ describe('onRpcRequest', () => {
         method: 'hello',
         origin,
       });
-
       const ui = await response.getInterface();
       expect(ui.type).toBe('confirmation');
       expect(ui).toRender(

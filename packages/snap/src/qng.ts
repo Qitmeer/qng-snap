@@ -1,6 +1,6 @@
 import { SLIP10Node } from '@metamask/key-tree';
-import { Buffer } from 'buffer';
-import { ec, hash, address, networks } from 'qitmeer-js';
+import { ec, hash, address, networks } from 'qitmeerts';
+import * as uint8arraytools from 'uint8array-tools';
 
 import { qngTransferUtxo } from './qngweb3';
 
@@ -29,17 +29,18 @@ export const getQngAccount = async (): Promise<SLIP10Node> => {
 
 export const getQngAddress = async (): Promise<string> => {
   const account = await getQngAccount();
-  const privKey = ec.fromPrivateKey(
-    Buffer.from(trimHexPrefix(account.privateKey as string), 'hex'),
+  const b = uint8arraytools.fromHex(
+    trimHexPrefix(account.privateKey as string),
+  );
+  // return uint8arraytools.toHex(b);
+  const privKey = (await ec.fromPrivateKey(
+    uint8arraytools.fromHex(trimHexPrefix(account.privateKey as string)),
     {},
-  );
+  )) as any;
+  // console.log(pub.toString('hex'));
   const pub = privKey.publicKey;
-  console.log(pub.toString('hex'));
-  const h16 = await hash.hash160(pub);
-  const addr = address.toBase58Check(
-    Buffer.from(h16),
-    networks.testnet.pubKeyHashAddrId,
-  );
+  const h16 = hash.hash160(pub);
+  const addr = address.toBase58Check(h16, networks.testnet.pubKeyHashAddrId);
   return addr;
 };
 
@@ -50,7 +51,7 @@ export const qngTransfer = async (
 ): Promise<string> => {
   const account = await getQngAccount();
   const privKey = ec.fromPrivateKey(
-    Buffer.from(trimHexPrefix(account.privateKey as string), 'hex'),
+    uint8arraytools.fromHex(trimHexPrefix(account.privateKey as string)),
     {},
   );
   // create a new tx-signer
