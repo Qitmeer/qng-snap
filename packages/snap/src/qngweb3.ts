@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
-import { txsign, networks } from 'qitmeer-js';
+import { TxSigner as txsign, networks } from 'qitmeerts';
+import * as uint8arraytools from 'uint8array-tools';
 
 // jsonrpc Request
 // {
@@ -91,13 +92,13 @@ export const qngGetAvailableUtxos = async (addr: string): Promise<UTXO[]> => {
 //   "id": 1
 // }
 export const sendRawTx = async (
-  rawData: string,
+  rawData: Uint8Array,
   allowHighFee: boolean,
 ): Promise<string> => {
   const provider = new ethers.providers.Web3Provider(ethereum as any);
   // const httpProvider = new ethers.providers.JsonRpcProvider();
   await provider.getNetwork();
-  const params = [rawData, allowHighFee];
+  const params = [uint8arraytools.toHex(rawData), allowHighFee];
   const result = await provider.send('qng_sendRawTx', params);
   try {
     return result;
@@ -177,8 +178,8 @@ export const transferUTXOToEvm = async (
   // eslint-disable-next-line @typescript-eslint/prefer-for-of
   // TODO need sign different type like qx
   for (let i = 0; i < needUtxos.length; i++) {
-    txsnr.signExport(i, privKey);
-    // txsnr.sign(i, privKey);
+    // txsnr.signExport(i, privKey);
+    txsnr.sign(i, privKey);
   }
   // get raw Tx
   const rawTx = txsnr.build().toBuffer();
@@ -205,7 +206,8 @@ export const qngTransferEvmToUtxo = async (
   // eslint-disable-next-line @typescript-eslint/prefer-for-of
   // TODO need sign different type like qx
   for (let i = 0; i < needUtxos.length; i++) {
-    txsnr.signImport(i, privKey);
+    // txsnr.signImport(i, privKey);
+    txsnr.sign(i, privKey);
   }
   // get raw Tx
   const rawTx = txsnr.build().toBuffer();
