@@ -29,15 +29,10 @@ export const getQngAccount = async (): Promise<SLIP10Node> => {
 
 export const getQngAddress = async (): Promise<string> => {
   const account = await getQngAccount();
-  const b = uint8arraytools.fromHex(
-    trimHexPrefix(account.privateKey as string),
-  );
-  // return uint8arraytools.toHex(b);
-  const privKey = (await ec.fromPrivateKey(
+  const privKey = ec.fromPrivateKey(
     uint8arraytools.fromHex(trimHexPrefix(account.privateKey as string)),
     {},
-  )) as any;
-  // console.log(pub.toString('hex'));
+  );
   const pub = privKey.publicKey;
   const h16 = hash.hash160(pub);
   const addr = address.toBase58Check(h16, networks.testnet.pubKeyHashAddrId);

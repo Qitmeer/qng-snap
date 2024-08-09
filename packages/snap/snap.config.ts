@@ -17,12 +17,6 @@ const config: SnapConfig = {
         asyncWebAssembly: true,
         syncWebAssembly: true,
       },
-      resolve: {
-        alias: {
-          name: 'tiny-secp256k1',
-          alias: resolve(__dirname, 'node_modules/tiny-secp256k1'),
-        },
-      },
       module: {
         rules: [
           {
