@@ -103,7 +103,12 @@ export const AACard = () => {
   const [address, setAddress] = useState('');
   const [balance, setBalance] = useState('');
   const [qngAddress, setQngAddress] = useState('');
+  const [qngBalance, setQngBalance] = useState('');
   const [target, setTarget] = useState('');
+  const [txide, setTxid] = useState('');
+  const [idx, setIdx] = useState('');
+  const [fee, setFee] = useState('10000');
+  const [oneUtxo, setOneUtxo] = useState('');
   const [ethAmount, setEthAmount] = useState('');
 
   // const Hash160 = (pubHex: string): string => {
@@ -118,6 +123,13 @@ export const AACard = () => {
       setAddress((await invokeSnap({ method: 'connect' })) as string);
       setQngAddress((await invokeSnap({ method: 'connect_qng' })) as string);
       setBalance((await invokeSnap({ method: 'balance' })) as string);
+      setQngBalance((await invokeSnap({ method: 'balance_qng' })) as string);
+      setOneUtxo(
+        (await invokeSnap({
+          method: 'getOneUtxo',
+          params: { utxoFrom: qngAddress },
+        })) as string,
+      );
     } catch (er) {
       console.error(er);
     }
@@ -127,6 +139,13 @@ export const AACard = () => {
     try {
       setEOABalance((await invokeSnap({ method: 'balance_eoa' })) as string);
       setBalance((await invokeSnap({ method: 'balance' })) as string);
+      setQngBalance((await invokeSnap({ method: 'balance_qng' })) as string);
+      setOneUtxo(
+        (await invokeSnap({
+          method: 'getOneUtxo',
+          params: { utxoFrom: qngAddress },
+        })) as string,
+      );
     } catch (er) {
       console.error(er);
     }
@@ -138,6 +157,18 @@ export const AACard = () => {
 
   const handleEthAmountChange = (ev: React.FocusEvent<HTMLInputElement>) => {
     setEthAmount(ev.currentTarget.value);
+  };
+
+  const handleTxidChange = (ev: React.FocusEvent<HTMLInputElement>) => {
+    setTxid(ev.currentTarget.value);
+  };
+
+  const handleIdxChange = (ev: React.FocusEvent<HTMLInputElement>) => {
+    setIdx(ev.currentTarget.value);
+  };
+
+  const handleFeeChange = (ev: React.FocusEvent<HTMLInputElement>) => {
+    setFee(ev.currentTarget.value);
   };
 
   const handleTransferFromAAClick = async () => {
@@ -173,7 +204,7 @@ export const AACard = () => {
 
     try {
       const ethValue = `${ethAmount}`;
-      const rawTx = (await invokeSnap({
+      const txid = (await invokeSnap({
         method: 'utxoTransfer',
         params: {
           from: qngAddress,
@@ -183,12 +214,62 @@ export const AACard = () => {
       })) as string;
       // eslint-disable-next-line no-alert
       alert(`tx sign succ`);
-      console.log(rawTx);
+      console.log(txid);
     } catch (er) {
       console.error(er);
     }
   };
 
+  const handleUtxoToEvmClick = async () => {
+    if (!txide || !idx) {
+      // eslint-disable-next-line no-alert
+      alert('enter txid and idx and fee.');
+      return;
+    }
+
+    const withWallet = false;
+    try {
+      const res = (await invokeSnap({
+        method: 'export',
+        params: {
+          txid: txide,
+          idx,
+          fee,
+          withWallet,
+        },
+      })) as string;
+      // eslint-disable-next-line no-alert
+      alert(`sign succ ${res}`);
+      console.log(res);
+    } catch (er) {
+      console.error(er);
+    }
+  };
+
+  const handleUtxoToEvmWithWalletClick = async () => {
+    if (!txide || !idx) {
+      // eslint-disable-next-line no-alert
+      alert('enter txid and idx and fee.');
+      return;
+    }
+    const withWallet = true;
+    try {
+      const res = (await invokeSnap({
+        method: 'export',
+        params: {
+          txid: txide,
+          idx,
+          fee,
+          withWallet,
+        },
+      })) as string;
+      // eslint-disable-next-line no-alert
+      alert(`sign succ ${res}`);
+      console.log(res);
+    } catch (er) {
+      console.error(er);
+    }
+  };
   return (
     <>
       {!address && (
@@ -215,6 +296,7 @@ export const AACard = () => {
           <CardWrapper fullWidth={true} disabled={false}>
             <Title>Your Qng Account 🎉</Title>
             <AAText>P2KH Address: {qngAddress}</AAText>
+            <AAText>Balance: {qngBalance}</AAText>
           </CardWrapper>
           <CardWrapper fullWidth={true} disabled={false}>
             <Button onClick={handleReloadBalancesClick}>Reload Balances</Button>
@@ -256,6 +338,37 @@ export const AACard = () => {
             <Spacer />
             <Button onClick={handleTransferFromQngClick}>
               Transfer from UTXO
+            </Button>
+          </CardWrapper>
+
+          <CardWrapper fullWidth={true} disabled={false}>
+            <Title>Transfer from Qng Account</Title>
+            <div>
+              <TargetInput
+                type="text"
+                placeholder="txid"
+                onChange={handleTxidChange}
+              />
+              <AmountInput
+                type="number"
+                placeholder="idx"
+                onChange={handleIdxChange}
+              />
+              <AmountInput
+                type="number"
+                placeholder="fee"
+                onChange={handleFeeChange}
+              />
+            </div>
+            <Title>Available UTXO of the EoaAddress</Title>
+            <AAText> {oneUtxo} </AAText>
+            <Spacer />
+            <Button onClick={handleUtxoToEvmClick}>
+              Transfer from UTXO to EVM with {eoaAddress}
+            </Button>
+            <Spacer />
+            <Button onClick={handleUtxoToEvmWithWalletClick}>
+              Transfer from UTXO to EVM with {qngAddress}
             </Button>
           </CardWrapper>
         </>

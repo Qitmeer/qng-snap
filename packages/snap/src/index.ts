@@ -4,7 +4,14 @@ import { ethers } from 'ethers';
 
 import { getAbstractAccount } from './getAbstractAccount';
 import { getBalance } from './getBalance';
-import { getQngAddress, qngTransfer } from './qng';
+import {
+  getQngAddress,
+  qngTransfer,
+  getQngBalance,
+  ethSign,
+  walletSign,
+  getOneUtxo,
+} from './qng';
 import { transfer } from './transfer';
 // export const changeNetwork = async () => {
 //   await ethereum.request({
@@ -47,6 +54,8 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       return await getQngAddress();
     case 'balance_eoa':
       return await getBalance(await getEoaAddress());
+    case 'balance_qng':
+      return await getQngBalance();
     case 'connect':
       return await getAddress();
     case 'balance':
@@ -63,6 +72,37 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         [key: string]: string;
       };
       return await qngTransfer(from as string, to as string, amount as string);
+    case 'export':
+      // eslint-disable-next-line no-case-declarations
+      const { txid, idx, fee, withWallet } = request?.params as unknown as {
+        [key: string]: any;
+      };
+      if (!withWallet) {
+        return await ethSign(txid as string, idx as number, fee as number);
+      }
+      // eslint-disable-next-line no-case-declarations
+      const res = await snap.request({
+        method: 'snap_dialog',
+        params: {
+          type: 'confirmation',
+          content: panel([
+            text(`sign with 813 wallet`),
+            // eslint-disable-next-line no-template-curly-in-string, @typescript-eslint/restrict-template-expressions
+            text(`Sign Content\n txid:${txid} \nidx:${idx} \nfee:${fee}`),
+            text('Please Check the fee!'),
+          ]),
+        },
+      });
+      if (!res) {
+        return '';
+      }
+      return walletSign(txid as string, idx as number, fee as number);
+    case 'getOneUtxo':
+      // eslint-disable-next-line no-case-declarations
+      const { utxoFrom } = request?.params as unknown as {
+        [key: string]: string;
+      };
+      return getOneUtxo(utxoFrom as string);
     case 'hello':
       return snap.request({
         method: 'snap_dialog',
