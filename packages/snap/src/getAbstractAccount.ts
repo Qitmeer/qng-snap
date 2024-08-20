@@ -9,6 +9,8 @@ import {
 // import type { BigNumberish} from 'ethers';
 import { ethers } from 'ethers';
 
+import { getConfig } from './config';
+// entryPointAddress
 // const paymasterUrl = ''; // Optional
 // Extend the Ethereum Foundation's account-abstraction/sdk's basic paymaster
 // class VerifyingPaymasterAPI extends PaymasterAPI {
@@ -86,36 +88,50 @@ import { ethers } from 'ethers';
 // qng testnet deployed
 // entryPoint Contract https://github.com/eth-infinitism/account-abstraction/blob/v0.6.0/contracts/core/EntryPoint.sol
 // deployed by deterministic-deployment-proxy https://github.com/Arachnid/deterministic-deployment-proxy.git
-const entryPointAddress = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789';
+// entryPointAddress
 // const paymasterAPI = new VerifyingPaymasterAPI(paymasterUrl, entryPointAddress);
 // account factory Contract https://github.com/eth-infinitism/account-abstraction/blob/v0.6.0/contracts/samples/SimpleAccountFactory.sol
 // deployed by deterministic-deployment-proxy https://github.com/Arachnid/deterministic-deployment-proxy.git
-const factoryAddress = '0x9406cc6185a346906296840746125a0e44976454';
-// const paymasterUrl = ''; // Optional
-
+// const { factoryAddress } = getConfig();
 // ** server response header set "Access-Control-Allow-Origin": "null" **
-export const proxyUrl = 'http://127.0.0.1:8081';
-export const bundlerUrl = `${proxyUrl}/bundler`;
-export const qngUrl = `${proxyUrl}/qng`;
+export const bundlerUrl = (chainId: number): string => {
+  const conf = getConfig(chainId);
+  return `${conf.proxyUrl}/bundler`;
+};
+export const qngUrl = (chainId: number): string => {
+  const conf = getConfig(chainId);
+  return `${conf.proxyUrl}/qng`;
+};
 
 // TODO crossQngUrl will be merged in bundlerUrl
-export const crossQngUrl = `${proxyUrl}/export`;
-export const getAbstractAccount = async (): Promise<SimpleAccountAPI> => {
+export const crossQngUrl = (chainId: number): string => {
+  const conf = getConfig(chainId);
+  return `${conf.proxyUrl}/export`;
+};
+export const getAbstractAccount = async (
+  chainId: number,
+): Promise<SimpleAccountAPI> => {
+  const conf = getConfig(chainId);
   const provider = new ethers.providers.Web3Provider(ethereum as any);
   await provider.send('eth_requestAccounts', []);
   const owner = provider.getSigner();
   const aa = new SimpleAccountAPI({
     provider,
-    entryPointAddress,
+    entryPointAddress: conf.entryPointAddress,
     owner,
-    factoryAddress,
+    factoryAddress: conf.factoryAddress,
     // paymasterAPI,
   });
   return aa;
 };
 
-export const bundlerProvider = async (): Promise<HttpRpcClient> => {
-  const provider = new ethers.providers.Web3Provider(ethereum as any);
-  const net = await provider.getNetwork();
-  return new HttpRpcClient(bundlerUrl, entryPointAddress, net.chainId);
+export const bundlerProvider = async (
+  chainId: number,
+): Promise<HttpRpcClient> => {
+  const conf = getConfig(chainId);
+  return new HttpRpcClient(
+    bundlerUrl(chainId),
+    conf.entryPointAddress,
+    chainId,
+  );
 };

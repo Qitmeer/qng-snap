@@ -29,6 +29,7 @@
   "dependencies": {
     "@account-abstraction/contracts": "^0.6.0",
     "@account-abstraction/sdk": "^0.6.0",
+    "@metamask/key-tree": "^9.1.2",
     "@metamask/snaps-sdk": "^4.0.0",
     "@noble/hashes": "^1.4.0",
     "@types/base-x": "^3.0.6",
