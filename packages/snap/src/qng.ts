@@ -1,8 +1,9 @@
 import { SLIP10Node } from '@metamask/key-tree';
 import { ethers } from 'ethers';
-import { ec, hash, address, networks } from 'qitmeerts';
+import { ec, hash, address } from 'qitmeerts';
 import * as uint8arraytools from 'uint8array-tools';
 
+import { getConfig } from './config';
 import {
   qngTransferUtxo,
   qngGetUTXOBalance,
@@ -27,14 +28,15 @@ export const getQngAccount = async (): Promise<SLIP10Node> => {
     },
   });
 
-  // Next, create an instance of a SLIP-10 node for the Dogecoin node.
+  // Next, create an instance of a SLIP-10 node for the Qng node.
   const qngSlip10Node = await SLIP10Node.fromJSON(qngNode);
   // m/44'/813'/0
   const accountKey0 = await qngSlip10Node.derive(['bip32:0']);
   return accountKey0;
 };
 
-export const getQngAddress = async (): Promise<string> => {
+export const getQngAddress = async (chainId: number): Promise<string> => {
+  const conf = getConfig(chainId);
   const account = await getQngAccount();
   const privKey = ec.fromPrivateKey(
     uint8arraytools.fromHex(trimHexPrefix(account.privateKey as string)),
@@ -42,13 +44,13 @@ export const getQngAddress = async (): Promise<string> => {
   );
   const pub = privKey.publicKey;
   const h16 = hash.hash160(pub);
-  const addr = address.toBase58Check(h16, networks.privnet.pubKeyHashAddrId);
+  const addr = address.toBase58Check(h16, conf.networkConf.pubKeyHashAddrId);
   return addr;
 };
 
-export const getQngBalance = async (): Promise<string> => {
-  const addr = await getQngAddress();
-  const ba = await qngGetUTXOBalance(addr);
+export const getQngBalance = async (chainId: number): Promise<string> => {
+  const addr = await getQngAddress(chainId);
+  const ba = await qngGetUTXOBalance(addr, chainId);
   return ba;
 };
 
@@ -56,8 +58,9 @@ export const ethSign = async (
   txid: string,
   idx: number,
   fee: number,
+  chainId: number,
 ): Promise<string> => {
-  const signRes = await transferUTXOToEvmWithEthSign(txid, idx, fee);
+  const signRes = await transferUTXOToEvmWithEthSign(txid, idx, fee, chainId);
   return signRes;
 };
 
@@ -65,6 +68,7 @@ export const walletSign = async (
   txid: string,
   idx: number,
   fee: number,
+  chainId: number,
 ): Promise<string> => {
   const account = await getQngAccount();
   const privKey = ec.fromPrivateKey(
@@ -80,14 +84,17 @@ export const walletSign = async (
     idx,
     fee,
     handleSignStr(signature),
+    chainId,
   );
-  return txhash;
+  // get the eth address
+  return `${wallet.address}:${txhash}`;
 };
 
 export const qngTransfer = async (
   _from: string,
   _target: string,
   _amount: string,
+  chainId: number,
 ): Promise<string> => {
   const account = await getQngAccount();
   const privKey = ec.fromPrivateKey(
@@ -95,11 +102,23 @@ export const qngTransfer = async (
     {},
   );
   // create a new tx-signer
-  const txid = qngTransferUtxo(_from, _target, Number(_amount), privKey);
+  const txid = qngTransferUtxo(
+    _from,
+    _target,
+    Number(_amount),
+    privKey,
+    chainId,
+  );
   return txid;
 };
-export const getOneUtxo = async (from: string): Promise<string> => {
-  const last = await qngGetAvailableUtxos(from);
+export const getOneUtxo = async (
+  from: string,
+  chainId: number,
+): Promise<string> => {
+  const last = await qngGetAvailableUtxos(from, chainId);
+  if (!last) {
+    return '';
+  }
   if (last.length < 1) {
     return '';
   }

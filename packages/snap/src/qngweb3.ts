@@ -7,14 +7,19 @@ import { qngUrl, crossQngUrl } from './getAbstractAccount';
 
 export const trimHexPrefix = (key: string) =>
   key.startsWith('0x') ? key.substring(2) : key;
-const _qngSend = async (method: string, params: any): Promise<any> => {
+
+const _fetchJsonRequest = async (
+  url: string,
+  method: string,
+  params: any,
+): Promise<any> => {
   const body = {
     jsonrpc: '2.0',
     method,
     params,
     id: 1,
   };
-  const re = await fetch(qngUrl, {
+  const re = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -28,27 +33,19 @@ const _qngSend = async (method: string, params: any): Promise<any> => {
     return '';
   }
 };
-const _qngCrossSend = async (method: string, params: any): Promise<any> => {
-  const body = {
-    jsonrpc: '2.0',
-    method,
-    params,
-    id: 1,
-  };
-  // send to bundler
-  const re = await fetch(crossQngUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-  const result = await re.json();
-  try {
-    return result.result;
-  } catch (error) {
-    return '';
-  }
+const _qngSend = async (
+  method: string,
+  params: any,
+  chainId: number,
+): Promise<any> => {
+  return _fetchJsonRequest(qngUrl(chainId), method, params);
+};
+const _qngCrossSend = async (
+  method: string,
+  params: any,
+  chainId: number,
+): Promise<any> => {
+  return _fetchJsonRequest(crossQngUrl(chainId), method, params);
 };
 // jsonrpc Request
 // {
@@ -69,9 +66,12 @@ const _qngCrossSend = async (method: string, params: any): Promise<any> => {
 //   },
 //   "id": 1
 // }
-export const qngAddWatchAddr = async (addr: string): Promise<void> => {
+export const qngAddWatchAddr = async (
+  addr: string,
+  chainId: number,
+): Promise<void> => {
   try {
-    await _qngSend('qng_addBalance', [addr]);
+    await _qngSend('qng_addBalance', [addr], chainId);
   } catch (error) {
     console.log(error);
   }
@@ -96,13 +96,16 @@ export const qngAddWatchAddr = async (addr: string): Promise<void> => {
 //   },
 //   "id": 1
 // }
-export const qngGetUTXOBalance = async (addr: string): Promise<string> => {
+export const qngGetUTXOBalance = async (
+  addr: string,
+  chainId: number,
+): Promise<string> => {
   // const provider = new ethers.providers.Web3Provider(ethereum as any);
   // await provider.getNetwork();
   // const httpProvider = new ethers.providers.JsonRpcProvider(RPC_API);
   // const params = [addr, 0];
   // const result = await httpProvider.send('qng_getBalance', params);
-  const ba = await _qngSend('qng_getBalance', [addr, 0]);
+  const ba = await _qngSend('qng_getBalance', [addr, 0], chainId);
   try {
     return (ba as number).toString();
   } catch (error: any) {
@@ -138,12 +141,13 @@ type UTXO = {
 //   },
 //   "id": 1
 // }
-export const qngGetAvailableUtxos = async (addr: string): Promise<UTXO[]> => {
-  // const provider = new ethers.providers.Web3Provider(ethereum as any);
-  // // const httpProvider = new ethers.providers.JsonRpcProvider();
-  // await provider.getNetwork();
+export const qngGetAvailableUtxos = async (
+  addr: string,
+  chainId: number,
+): Promise<UTXO[]> => {
+  await qngAddWatchAddr(addr, chainId);
   const params = [addr, 50, false];
-  const ret = await _qngSend('qng_getUTXOs', params);
+  const ret = await _qngSend('qng_getUTXOs', params, chainId);
   try {
     return ret as UTXO[];
   } catch (error) {
@@ -174,13 +178,14 @@ export const qngGetAvailableUtxos = async (addr: string): Promise<UTXO[]> => {
 export const sendRawTx = async (
   rawData: Uint8Array,
   allowHighFee: boolean,
+  chainId: number,
 ): Promise<string> => {
   const provider = new ethers.providers.Web3Provider(ethereum as any);
   // const httpProvider = new ethers.providers.JsonRpcProvider();
   await provider.getNetwork();
   const params = [uint8arraytools.toHex(rawData), allowHighFee];
   try {
-    const ret = await _qngSend('qng_sendRawTransaction', params);
+    const ret = await _qngSend('qng_sendRawTransaction', params, chainId);
     return ret as string;
   } catch (error) {
     console.log(error);
@@ -212,10 +217,11 @@ export const crossSendtoBunder = async (
   idx: number,
   fee: number,
   sign: string,
+  chainId: number,
 ): Promise<string> => {
   const params = [txid, idx, fee, sign];
   try {
-    const ret = await _qngCrossSend('qng_crossSend', params);
+    const ret = await _qngCrossSend('qng_crossSend', params, chainId);
     return ret as string;
   } catch (error) {
     console.log(error);
@@ -227,11 +233,12 @@ export const crossSendtoBunder = async (
 export const qngGetTransferUtxos = async (
   from: string,
   amount: number,
+  chainId: number,
 ): Promise<UTXO[]> => {
   if (amount <= 0) {
     return [] as UTXO[];
   }
-  const utxos = await qngGetAvailableUtxos(from);
+  const utxos = await qngGetAvailableUtxos(from, chainId);
   // TODO utxo sort by amount ASC
   const res: UTXO[] = [];
   let leftAmount: number = amount;
@@ -254,10 +261,11 @@ export const qngTransferUtxo = async (
   to: string,
   amount: number,
   privKey: any,
+  chainId: number,
 ): Promise<string> => {
   const fee = 10000;
   let leftAmount: number = amount + fee;
-  const needUtxos = await qngGetTransferUtxos(from, leftAmount);
+  const needUtxos = await qngGetTransferUtxos(from, leftAmount, chainId);
   const txsnr = txsign.newSigner(networks.privnet);
   txsnr.setTimestamp(parseInt(`${(new Date() as any) / 1000}`, 10));
   txsnr.setVersion(1);
@@ -279,7 +287,7 @@ export const qngTransferUtxo = async (
   }
   // get raw Tx
   const rawTx = txsnr.build().toBuffer();
-  return sendRawTx(rawTx, false);
+  return sendRawTx(rawTx, false, chainId);
 };
 
 export const getInputHash = (
@@ -314,6 +322,7 @@ export const transferUTXOToEvmWithEthSign = async (
   txid: string,
   idx: number,
   fee: number,
+  chainId: number,
 ): Promise<string> => {
   const ret = uint8arraytools.toHex(getInputHash(txid, idx, fee));
 
@@ -324,6 +333,12 @@ export const transferUTXOToEvmWithEthSign = async (
     method: 'personal_sign',
     params: [ret, accounts[0]],
   })) as string;
-  const txhash = crossSendtoBunder(txid, idx, fee, handleSignStr(sign));
+  const txhash = crossSendtoBunder(
+    txid,
+    idx,
+    fee,
+    handleSignStr(sign),
+    chainId,
+  );
   return txhash;
 };
