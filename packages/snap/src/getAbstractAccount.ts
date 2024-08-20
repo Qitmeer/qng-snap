@@ -92,7 +92,14 @@ const entryPointAddress = '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789';
 // deployed by deterministic-deployment-proxy https://github.com/Arachnid/deterministic-deployment-proxy.git
 const factoryAddress = '0x9406cc6185a346906296840746125a0e44976454';
 // const paymasterUrl = ''; // Optional
-const bundlerUrl = 'http://127.0.0.1:3000/rpc';
+
+// ** server response header set "Access-Control-Allow-Origin": "null" **
+export const proxyUrl = 'http://127.0.0.1:8081';
+export const bundlerUrl = `${proxyUrl}/bundler`;
+export const qngUrl = `${proxyUrl}/qng`;
+
+// TODO crossQngUrl will be merged in bundlerUrl
+export const crossQngUrl = `${proxyUrl}/export`;
 export const getAbstractAccount = async (): Promise<SimpleAccountAPI> => {
   const provider = new ethers.providers.Web3Provider(ethereum as any);
   await provider.send('eth_requestAccounts', []);
