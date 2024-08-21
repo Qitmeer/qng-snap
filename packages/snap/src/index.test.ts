@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 // eslint-disable-next-line @typescript-eslint/no-shadow
 import { expect } from '@jest/globals';
 import { installSnap } from '@metamask/snaps-jest';
@@ -6,7 +7,6 @@ import { panel, text } from '@metamask/snaps-sdk';
 describe('onRpcRequest', () => {
   describe('hello', () => {
     it('shows a confirmation dialog', async () => {
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       const { request } = await installSnap();
 
       const origin = 'Jest';

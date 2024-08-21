@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 // import { Buffer } from 'buffer';
 // import { hash, hash160 } from 'qitmeer-js';
 import { useState } from 'react';
@@ -116,7 +117,7 @@ export const AACard = () => {
   //   return h16.toString('hex');
   // };
 
-  const handleConnectAAClick = async () => {
+  const handleConnectAAClick = async (): Promise<void> => {
     try {
       setEOAAddress((await invokeSnap({ method: 'connect_eoa' })) as string);
       setEOABalance((await invokeSnap({ method: 'balance_eoa' })) as string);

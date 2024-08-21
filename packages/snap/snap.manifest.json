@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "An qng example Snap written in TypeScript.",
   "proposedName": "QNG Snap",
   "repository": {
@@ -7,7 +7,7 @@
     "url": "git+https://github.com/Qitmeer/qng-snap.git"
   },
   "source": {
-    "shasum": "uMUyK94XBg7Z4/r79SVkXTkp9kbCifb6hPblD5VCA+U=",
+    "shasum": "dq3m9A23Q1JzN7O0PTKzkz80pOSp2mFkqA+njJdmbs8=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",

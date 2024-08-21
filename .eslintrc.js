@@ -3,13 +3,7 @@ module.exports = {
 
   parserOptions: {
     sourceType: 'module',
-  },
-  "rules": {
-    "@typescript-eslint/no-misused-promises": [2, {
-      "checksVoidReturn": {
-        "attributes": false
-      }
-    }]
+    project: ['tsconfig.json'],
   },
   extends: ['@metamask/eslint-config'],
 
