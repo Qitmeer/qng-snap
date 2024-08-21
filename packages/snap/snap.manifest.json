@@ -4,14 +4,15 @@
   "proposedName": "QNG Snap",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/template-snap-monorepo.git"
+    "url": "git+https://github.com/Qitmeer/qng-snap.git"
   },
   "source": {
-    "shasum": "Twu2yxPnOslmDBV8UT7IDLAXQlj/ovaodWaPdNTSIhQ=",
+    "shasum": "h6EOn8TNA1e+VPhnT1tsj9bUaouRlPD5QyeZCRycLyA=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
-        "packageName": "snap",
+        "packageName": "qngsnap",
+        "iconPath": "images/icon.svg",
         "registry": "https://registry.npmjs.org/"
       }
     }
