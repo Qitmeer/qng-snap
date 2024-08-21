@@ -26,7 +26,6 @@ export const getEoaAddress = async (): Promise<string> => {
 };
 
 export const getAddress = async (chainId: number): Promise<string> => {
-  return '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789';
   const aa = await getAbstractAccount(chainId);
   const address = await aa.getAccountAddress();
   return address;

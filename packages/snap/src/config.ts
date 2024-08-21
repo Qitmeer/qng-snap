@@ -18,7 +18,7 @@ export const PrivateConfig: Config = {
 export const TestConfig: Config = {
   entryPointAddress: '0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789',
   factoryAddress: '0x9406cc6185a346906296840746125a0e44976454',
-  proxyUrl: 'http://47.242.255.132:8081',
+  proxyUrl: 'https://47.242.255.132',
   networkConf: networks.testnet,
 };
 export const MixConfig: Config = {

@@ -1,6 +1,6 @@
 {
   "name": "qngsnap",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The Qng of MetaMask Snaps, now written in TypeScript.",
   "repository": {
     "type": "git",
