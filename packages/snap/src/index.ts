@@ -64,7 +64,7 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       const { target, ethValue } = request?.params as unknown as {
         [key: string]: string;
       };
-      return await transfer(target as string, ethValue as string);
+      return await transfer(target as string, ethValue as string, chainId);
     case 'utxoTransfer':
       // eslint-disable-next-line no-case-declarations
       const { from, to, amount } = request?.params as unknown as {
