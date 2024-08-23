@@ -322,7 +322,6 @@ export const transferUTXOToEvmWithEthSign = async (
   txid: string,
   idx: number,
   fee: number,
-  chainId: number,
 ): Promise<string> => {
   const ret = uint8arraytools.toHex(getInputHash(txid, idx, fee));
 
@@ -333,12 +332,13 @@ export const transferUTXOToEvmWithEthSign = async (
     method: 'personal_sign',
     params: [ret, accounts[0]],
   })) as string;
-  const txhash = crossSendtoBunder(
-    txid,
-    idx,
-    fee,
-    handleSignStr(sign),
-    chainId,
-  );
-  return txhash;
+  return sign;
+  // const txhash = crossSendtoBunder(
+  //   txid,
+  //   idx,
+  //   fee,
+  //   handleSignStr(sign),
+  //   chainId,
+  // );
+  // return txhash;
 };

@@ -38,6 +38,5 @@ module.exports = {
     '**/build',
     '**/public',
     '**/.cache',
-    '!.manifest.json',
   ],
 };

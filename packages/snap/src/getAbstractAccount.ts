@@ -3,7 +3,7 @@
 import {
   SimpleAccountAPI,
   HttpRpcClient,
-  // PaymasterAPI,
+  PaymasterAPI,
   // calcPreVerificationGas,
 } from '@account-abstraction/sdk';
 // import type { BigNumberish} from 'ethers';
@@ -13,57 +13,48 @@ import { getConfig } from './config';
 // entryPointAddress
 // const paymasterUrl = ''; // Optional
 // Extend the Ethereum Foundation's account-abstraction/sdk's basic paymaster
-// class VerifyingPaymasterAPI extends PaymasterAPI {
-//   // eslint-disable-next-line no-restricted-syntax
-//   private readonly _paymasterUrl: string;
+class MeerChangePaymasterAPI extends PaymasterAPI {
+  // eslint-disable-next-line no-restricted-syntax
+  private readonly _paymasterUrl: string;
 
-//   // eslint-disable-next-line no-restricted-syntax
-//   private readonly _entryPoint: string;
+  // eslint-disable-next-line no-restricted-syntax
+  private readonly _entryPoint: string;
 
-//   constructor(_paymasterUrl: string, entryPoint: string) {
-//     super();
-//     this._paymasterUrl = _paymasterUrl;
-//     this._entryPoint = entryPoint;
-//   }
+  constructor(_paymasterUrl: string, entryPoint: string) {
+    super();
+    this._paymasterUrl = _paymasterUrl;
+    this._entryPoint = entryPoint;
+  }
 
-//   async getPaymasterAndData(
-//     userOp: Partial<UserOperationStruct>,
-//   ): Promise<string> {
-//     // Hack: userOp includes empty paymasterAndData which calcPreVerificationGas requires.
-//     try {
-//       // userOp.preVerificationGas contains a promise that will resolve to an error.
-//       await ethers.utils.resolveProperties(userOp);
-//       // eslint-disable-next-line no-empty
-//     } catch (_) {}
-//     const pmOp: Partial<UserOperationStruct> = {
-//       sender: userOp.sender as string,
-//       nonce: userOp.nonce as BigNumberish,
-//       initCode: userOp.initCode as string,
-//       callData: userOp.callData as string,
-//       callGasLimit: userOp.callGasLimit as BigNumberish,
-//       verificationGasLimit: userOp.verificationGasLimit as BigNumberish,
-//       maxFeePerGas: userOp.maxFeePerGas as BigNumberish,
-//       maxPriorityFeePerGas: userOp.maxPriorityFeePerGas as BigNumberish,
-//       // Dummy signatures are required in order to calculate a correct preVerificationGas value.
-//       paymasterAndData:
-//         '0x0101010101010101010101010101010101010101000000000000000000000000000000000000000000000000000001010101010100000000000000000000000000000000000000000000000000000000000000000101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101',
-//       signature:
-//         '0xa15569dd8f8324dbeabf8073fdec36d4b754f53ce5901e283c6de79af177dc94557fa3c9922cd7af2a96ca94402d35c39f266925ee6407aeb32b31d76978d4ba1c',
-//     };
-//     const op = await ethers.utils.resolveProperties(pmOp);
-//     op.preVerificationGas = calcPreVerificationGas(op);
-//     op.verificationGasLimit = ethers.BigNumber.from(
-//       op.verificationGasLimit,
-//     ).mul(3);
+  async getPaymasterAndData(userOp: any): Promise<string> {
+    console.log(userOp);
+    // Hack: userOp includes empty paymasterAndData which calcPreVerificationGas requires.
+    const provider = new ethers.providers.Web3Provider(ethereum as any);
+    const network = await provider.getNetwork();
+    const conf = getConfig(network.chainId);
+    return conf.paymasterAddress;
+  }
+}
 
-//     // Ask the paymaster to sign the transaction and return a valid paymasterAndData value.
-//     const params = [await optoJSON(op), this._entryPoint, { "type": "payg" }];
-//     const provider = new ethers.providers.JsonRpcProvider(paymasterUrl);
-//     const response = await provider.send("pm_sponsorUserOperation", params);
+export const getCurrentGasPrice = async (): Promise<ethers.BigNumber> => {
+  const provider = new ethers.providers.Web3Provider(ethereum as any);
+  const gasPrice = await provider.getGasPrice();
+  console.log(`${ethers.utils.formatUnits(gasPrice, 'gwei')} Gwei`);
+  return gasPrice;
+};
 
-//     return response.data.result.toString();
-//   }
-// }
+export const getCurrentPriorityFee = async (): Promise<ethers.BigNumber> => {
+  const provider = new ethers.providers.Web3Provider(ethereum as any);
+  const feeData = await provider.getFeeData();
+  console.log(
+    'Max Priority Fee Per Gas:',
+    `${ethers.utils.formatUnits(
+      feeData.maxPriorityFeePerGas as ethers.BigNumber,
+      'gwei',
+    )} Gwei`,
+  );
+  return feeData.maxPriorityFeePerGas as ethers.BigNumber;
+};
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 // async function optoJSON(op: Partial<UserOperationStruct>): Promise<any> {
@@ -114,13 +105,14 @@ export const getAbstractAccount = async (
   const conf = getConfig(chainId);
   const provider = new ethers.providers.Web3Provider(ethereum as any);
   await provider.send('eth_requestAccounts', []);
+  const paymasterAPI = new MeerChangePaymasterAPI('', conf.entryPointAddress);
   const owner = provider.getSigner();
   const aa = new SimpleAccountAPI({
     provider,
     entryPointAddress: conf.entryPointAddress,
     owner,
     factoryAddress: conf.factoryAddress,
-    // paymasterAPI,
+    paymasterAPI,
   });
   return aa;
 };

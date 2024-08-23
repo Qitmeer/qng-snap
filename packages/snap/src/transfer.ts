@@ -2,7 +2,12 @@
 import { panel, text } from '@metamask/snaps-sdk';
 import { ethers } from 'ethers';
 
-import { getAbstractAccount, bundlerProvider } from './getAbstractAccount';
+import {
+  getAbstractAccount,
+  bundlerProvider,
+  getCurrentGasPrice,
+  getCurrentPriorityFee,
+} from './getAbstractAccount';
 
 export const transfer = async (
   target: string,
@@ -33,8 +38,9 @@ export const transfer = async (
     target,
     value,
     data: '0x',
-    // maxFeePerGas: 0x6507a5d0,
-    // maxPriorityFeePerGas: 0x6507a5c0,
+    gasLimit: 200000,
+    maxFeePerGas: await getCurrentGasPrice(),
+    maxPriorityFeePerGas: await getCurrentPriorityFee(),
   });
   const bp = await bundlerProvider(chainId);
   const userOpHash = await bp.sendUserOpToBundler(userOp);
