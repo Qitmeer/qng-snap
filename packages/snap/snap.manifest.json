@@ -7,7 +7,7 @@
     "url": "git+https://github.com/Qitmeer/qng-snap.git"
   },
   "source": {
-    "shasum": "GrP/wQIijbmoD1EMLhQWtAcS1Ef9UOPzInQbe4bLEUE=",
+    "shasum": "uuJGDar2hF2mIgc3YudQCHflJKtdDy+w3x+JSzynPqg=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",

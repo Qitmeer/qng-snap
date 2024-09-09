@@ -1,13 +1,13 @@
 /* eslint-disable prettier/prettier */
 // import type { UserOperationStruct } from '@account-abstraction/contracts';
+import { ethers } from 'ethers';
 import {
-  SimpleAccountAPI,
+  QngAccountAPI,
   HttpRpcClient,
   PaymasterAPI,
   // calcPreVerificationGas,
-} from '@account-abstraction/sdk';
+} from 'qitmeerts';
 // import type { BigNumberish} from 'ethers';
-import { ethers } from 'ethers';
 
 import { getConfig } from './config';
 // entryPointAddress
@@ -101,13 +101,13 @@ export const crossQngUrl = (chainId: number): string => {
 };
 export const getAbstractAccount = async (
   chainId: number,
-): Promise<SimpleAccountAPI> => {
+): Promise<QngAccountAPI> => {
   const conf = getConfig(chainId);
   const provider = new ethers.providers.Web3Provider(ethereum as any);
   await provider.send('eth_requestAccounts', []);
   const paymasterAPI = new MeerChangePaymasterAPI('', conf.entryPointAddress);
   const owner = provider.getSigner();
-  const aa = new SimpleAccountAPI({
+  const aa = new QngAccountAPI({
     provider,
     entryPointAddress: conf.entryPointAddress,
     owner,
