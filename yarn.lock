@@ -4510,10 +4510,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@qng/eip4337-sdk@npm:0.6.5":
-  version: 0.6.5
-  resolution: "@qng/eip4337-sdk@npm:0.6.5"
-  checksum: d179f2e43cd58bd7d1757e137f3dd7a6a09cc98f709746353e16d0b27f113e7ae6adfe081eef3f8e5522d1a3e0dfc6da13ceb75c55661431feafcda61df97c8d
+"@qng/eip4337-sdk@npm:0.6.6":
+  version: 0.6.6
+  resolution: "@qng/eip4337-sdk@npm:0.6.6"
+  checksum: 11988646ad0fec8ad59cd0d74d4202b98ed702f3956ed453e2df66a1734ced74b5e0aa2c3b85a94286066c113af8e8ef07f5a1fa36cf83f8228fbf352d52fcf3
   languageName: node
   linkType: hard
 
@@ -16473,7 +16473,7 @@ __metadata:
     "@metamask/snaps-sdk": ^4.0.0
     "@noble/hashes": ^1.4.0
     "@qng/eip4337-contracts": 0.6.0
-    "@qng/eip4337-sdk": 0.6.5
+    "@qng/eip4337-sdk": 0.6.6
     "@qng/meerchange-contracts": 0.0.2
     "@types/base-x": ^3.0.6
     "@typescript-eslint/eslint-plugin": ^5.42.1
