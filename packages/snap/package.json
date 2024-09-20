@@ -1,16 +1,17 @@
 {
-  "name": "snap",
-  "version": "0.1.0",
-  "description": "The 'Hello, world!' of MetaMask Snaps, now written in TypeScript.",
+  "name": "qngsnap",
+  "version": "0.1.2",
+  "description": "The Qng of MetaMask Snaps, now written in TypeScript.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/template-snap-monorepo.git"
+    "url": "git+https://github.com/Qitmeer/qng-snap.git"
   },
   "license": "(MIT-0 OR Apache-2.0)",
   "main": "./dist/bundle.js",
   "files": [
     "dist/",
-    "snap.manifest.json"
+    "snap.manifest.json",
+    "images/icon.svg"
   ],
   "scripts": {
     "allow-scripts": "yarn workspace root allow-scripts",
@@ -29,8 +30,12 @@
   "dependencies": {
     "@account-abstraction/contracts": "^0.6.0",
     "@account-abstraction/sdk": "^0.6.0",
+    "@metamask/key-tree": "^9.1.2",
     "@metamask/snaps-sdk": "^4.0.0",
     "@noble/hashes": "^1.4.0",
+    "@qng/eip4337-contracts": "0.6.0",
+    "@qng/eip4337-sdk": "0.6.6",
+    "@qng/meerchange-contracts": "0.0.2",
     "@types/base-x": "^3.0.6",
     "bs58": "^6.0.0",
     "buffer": "^6.0.3",

@@ -7,9 +7,10 @@ import { getAbstractAccount, bundlerProvider } from './getAbstractAccount';
 export const transfer = async (
   target: string,
   ethValue: string,
+  chainId: number,
 ): Promise<string> => {
   const value = ethers.utils.parseEther(ethValue);
-  const aa = await getAbstractAccount();
+  const aa = await getAbstractAccount(chainId);
   const address = await aa.getAccountAddress();
 
   const result = await snap.request({
@@ -35,7 +36,7 @@ export const transfer = async (
     // maxFeePerGas: 0x6507a5d0,
     // maxPriorityFeePerGas: 0x6507a5c0,
   });
-  const bp = await bundlerProvider();
+  const bp = await bundlerProvider(chainId);
   const userOpHash = await bp.sendUserOpToBundler(userOp);
   const txid = await aa.getUserOpReceipt(userOpHash);
   console.log('reqId', userOpHash, 'txid=', txid);

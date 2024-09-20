@@ -3,6 +3,7 @@ module.exports = {
 
   parserOptions: {
     tsconfigRootDir: __dirname,
+    project: ['./tsconfig.json'],
   },
 
   overrides: [
@@ -26,5 +27,5 @@ module.exports = {
     },
   ],
 
-  ignorePatterns: ['!.eslintrc.js', 'dist/'],
+  ignorePatterns: ['!.eslintrc.js', 'dist/', '!.manifest.json'],
 };

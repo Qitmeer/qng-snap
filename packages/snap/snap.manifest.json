@@ -1,17 +1,18 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "An qng example Snap written in TypeScript.",
   "proposedName": "QNG Snap",
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetaMask/template-snap-monorepo.git"
+    "url": "git+https://github.com/Qitmeer/qng-snap.git"
   },
   "source": {
-    "shasum": "X0E7Z4Xx8kFeadQjs1fMG9MNX51YoJSBtbUo+Ok+VJ8=",
+    "shasum": "7I/+AmOMCUskawrmheuMA1TwD9Zz/Igk2/A1IjemseM=",
     "location": {
       "npm": {
         "filePath": "dist/bundle.js",
-        "packageName": "snap",
+        "packageName": "qngsnap",
+        "iconPath": "images/icon.svg",
         "registry": "https://registry.npmjs.org/"
       }
     }
