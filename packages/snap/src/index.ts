@@ -1,7 +1,6 @@
 import type { OnRpcRequestHandler } from '@metamask/snaps-sdk';
 import { panel, text } from '@metamask/snaps-sdk';
-import { ethers } from 'ethers';
-
+import { ethers, Wallet } from 'ethers';
 import { getAbstractAccount } from './getAbstractAccount';
 import { getBalance } from './getBalance';
 import {
@@ -11,18 +10,33 @@ import {
   ethSign,
   walletSign,
   getOneUtxo,
+  get50Utxos,
+  getQngBalanceByAddress,
+  checkTxIdSig,
 } from './qng';
 import { transfer } from './transfer';
 
 export const getChainId = async (): Promise<number> => {
   const provider = new ethers.providers.Web3Provider(ethereum as any);
   const network = await provider.getNetwork();
-  return network.chainId;
+  return Number(network.chainId);
 };
 export const getEoaAddress = async (): Promise<string> => {
   const provider = new ethers.providers.Web3Provider(ethereum as any);
   const accounts = await provider.send('eth_requestAccounts', []);
   return accounts[0];
+};
+export const connectWithVerifyQng = async (
+  txid: string,
+  idx: number,
+  sig: string,
+  chainId: number,
+): Promise<string> => {
+  const ret = await checkTxIdSig(txid, idx, sig, chainId);
+  if (!ret || ret == null) {
+    return '';
+  }
+  return ret;
 };
 
 export const getAddress = async (chainId: number): Promise<string> => {
@@ -45,6 +59,9 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
   origin,
   request,
 }) => {
+  const params = request?.params as unknown as {
+    [key: string]: any;
+  };
   const chainId = await getChainId();
   switch (request.method) {
     case 'connect_eoa':
@@ -53,8 +70,20 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       return await getQngAddress(chainId);
     case 'balance_eoa':
       return await getBalance(await getEoaAddress());
+    case 'connect_eoa_verify_qng':
+      return await connectWithVerifyQng(
+        params.txid as string,
+        params.idx as number,
+        params.sig as string,
+        chainId,
+      );
     case 'balance_qng':
       return await getQngBalance(chainId);
+    case 'balance_qng_address':
+      const { qngaddress } = request?.params as unknown as {
+        [key: string]: string;
+      };
+      return await getQngBalanceByAddress(chainId, qngaddress as string);
     case 'connect':
       return await getAddress(chainId);
     case 'balance':
@@ -77,15 +106,10 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
         chainId,
       );
     case 'export':
-      // eslint-disable-next-line no-case-declarations
-      const { txid, idx, fee, withWallet } = request?.params as unknown as {
-        [key: string]: any;
-      };
-      if (!withWallet) {
+      if (!params.withWallet) {
         return await ethSign(
-          txid as string,
-          idx as number,
-          fee as number,
+          params.ops as string,
+          params.fee as number,
           chainId,
         );
       }
@@ -97,7 +121,9 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
           content: panel([
             text(`sign with 813 wallet`),
             // eslint-disable-next-line no-template-curly-in-string, @typescript-eslint/restrict-template-expressions
-            text(`Sign Content\n txid:${txid} \nidx:${idx} \nfee:${fee}`),
+            text(
+              `Sign Content\n txid:${params.txid} \nidx:${params.idx} \nfee:${params.fee}`,
+            ),
             text('Please Check the fee!'),
           ]),
         },
@@ -105,13 +131,19 @@ export const onRpcRequest: OnRpcRequestHandler = async ({
       if (!res) {
         return '';
       }
-      return walletSign(txid as string, idx as number, fee as number, chainId);
+      return walletSign(params.ops as string, params.fee as number, chainId);
     case 'getOneUtxo':
       // eslint-disable-next-line no-case-declarations
       const { utxoFrom } = request?.params as unknown as {
         [key: string]: string;
       };
       return getOneUtxo(utxoFrom as string, chainId);
+    case 'get50Utxos':
+      // eslint-disable-next-line no-case-declarations
+      const { qngaddr } = request?.params as unknown as {
+        [key: string]: string;
+      };
+      return get50Utxos(qngaddr as string, chainId);
     case 'hello':
       return snap.request({
         method: 'snap_dialog',

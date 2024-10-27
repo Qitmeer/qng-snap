@@ -3,6 +3,7 @@ import { TxSigner as txsign, networks } from 'qitmeerts';
 import * as uint8arraytools from 'uint8array-tools';
 
 import { qngUrl, crossQngUrl } from './getAbstractAccount';
+
 // ** server response header set "Access-Control-Allow-Origin": "null" **
 
 export const trimHexPrefix = (key: string) =>
@@ -80,6 +81,74 @@ export const qngAddWatchAddr = async (
 // jsonrpc Request
 // {
 //   "jsonrpc": "2.0",
+//   "method": "qng_checkUTXO",
+//   "params": [
+//     "0000ffff...",0,"1000eeedddfff..."
+//   ],
+//   "id": 1
+// }
+// jsonrpc Response
+// {
+//   "jsonrpc": "2.0",
+//   "error": {
+//     "code": 0,
+//     "message": "ok",
+//     "result": "0000ffff..."
+//   },
+//   "id": 1
+// }
+export const qngCheckUTXO = async (
+  txid: string,
+  idx: number,
+  sig: string,
+  chainId: number,
+): Promise<string> => {
+  try {
+    const ret = await _qngSend('qng_checkUTXO', [txid, idx * 1, sig], chainId);
+    return ret;
+  } catch (error) {
+    console.log(error);
+  }
+  return '';
+};
+
+// jsonrpc Request
+// {
+//   "jsonrpc": "2.0",
+//   "method": "qng_calcUTXOSig",
+//   "params": [
+//     "0000ffff...",0,"1000eeedddfff..."
+//   ],
+//   "id": 1
+// }
+// jsonrpc Response
+// {
+//   "jsonrpc": "2.0",
+//   "error": {
+//     "code": 0,
+//     "message": "ok",
+//     "result": null
+//   },
+//   "id": 1
+// }
+export const qngCalcUTXOSig = async (
+  txid: string,
+  idx: number,
+  priv: string,
+  chainId: number,
+): Promise<string> => {
+  try {
+    const ret = await _qngSend('qng_calcUTXOSig', [txid, idx, priv], chainId);
+    return ret;
+  } catch (error) {
+    console.log(error);
+  }
+  return '';
+};
+
+// jsonrpc Request
+// {
+//   "jsonrpc": "2.0",
 //   "method": "qng_getBalance",
 //   "params": [
 //     "TnJdESQUPsA9mLrVf2NWRXiobdMUoCBH3h8"
@@ -105,6 +174,7 @@ export const qngGetUTXOBalance = async (
   // const httpProvider = new ethers.providers.JsonRpcProvider(RPC_API);
   // const params = [addr, 0];
   // const result = await httpProvider.send('qng_getBalance', params);
+  await qngAddWatchAddr(addr, chainId);
   const ba = await _qngSend('qng_getBalance', [addr, 0], chainId);
   try {
     return (ba as number).toString();
@@ -146,7 +216,7 @@ export const qngGetAvailableUtxos = async (
   chainId: number,
 ): Promise<UTXO[]> => {
   await qngAddWatchAddr(addr, chainId);
-  const params = [addr, 50, false];
+  const params = [addr, 10000, false];
   const ret = await _qngSend('qng_getUTXOs', params, chainId);
   try {
     return ret as UTXO[];
@@ -289,17 +359,42 @@ export const qngTransferUtxo = async (
   const rawTx = txsnr.build().toBuffer();
   return sendRawTx(rawTx, false, chainId);
 };
+export const getMultiInputHash = (inp: string, fee: number): string => {
+  let re = uint8arraytools.fromUtf8(inp);
+  let re1 = new Uint8Array(8);
+  uint8arraytools.writeUInt64(re1, 0, BigInt(fee), 'BE');
+  return uint8arraytools.toHex(mergeUint8Arrays([re, re1]));
+};
+
+function mergeUint8Arrays(arrays: any[]) {
+  const totalLength = arrays.reduce((acc, curr) => acc + curr.length, 0);
+
+  const mergedArray = new Uint8Array(totalLength);
+
+  let offset = 0;
+  arrays.forEach((array) => {
+    mergedArray.set(array, offset);
+    offset += array.length;
+  });
+
+  return mergedArray;
+}
 
 export const getInputHash = (
   txid: string,
   idx: number,
-  fee: number,
+  fee?: number,
 ): Uint8Array => {
-  const re = new Uint8Array(44);
+  let re = new Uint8Array(36);
+  if (fee) {
+    re = new Uint8Array(44);
+  }
   const constTxId: Uint8Array = uint8arraytools.fromHex(txid);
   re.set(constTxId.reverse(), 0);
   uint8arraytools.writeUInt32(re, 32, idx, 'BE');
-  uint8arraytools.writeUInt64(re, 36, BigInt(fee), 'BE');
+  if (fee) {
+    uint8arraytools.writeUInt64(re, 36, BigInt(fee), 'BE');
+  }
   return re;
 };
 
@@ -333,12 +428,12 @@ export const transferUTXOToEvmWithEthSign = async (
     method: 'personal_sign',
     params: [ret, accounts[0]],
   })) as string;
-  const txhash = crossSendtoBunder(
-    txid,
-    idx,
-    fee,
-    handleSignStr(sign),
-    chainId,
-  );
-  return txhash;
+  // const txhash = crossSendtoBunder(
+  //   txid,
+  //   idx,
+  //   fee,
+  //   handleSignStr(sign),
+  //   chainId,
+  // );
+  return sign;
 };

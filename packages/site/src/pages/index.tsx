@@ -1,21 +1,7 @@
 import styled from 'styled-components';
 
-import {
-  ConnectButton,
-  InstallFlaskButton,
-  ReconnectButton,
-  SendHelloButton,
-  Card,
-  AACard,
-} from '../components';
-import { defaultSnapOrigin } from '../config';
-import {
-  useMetaMask,
-  useInvokeSnap,
-  useMetaMaskContext,
-  useRequestSnap,
-} from '../hooks';
-import { isLocalSnap, shouldDisplayReconnectButton } from '../utils';
+import { StepForm } from '../components';
+import { useMetaMaskContext } from '../hooks';
 
 const Container = styled.div`
   display: flex;
@@ -103,33 +89,20 @@ const ErrorMessage = styled.div`
 
 const Index = () => {
   const { error } = useMetaMaskContext();
-  const { isFlask, snapsDetected, installedSnap } = useMetaMask();
-  const requestSnap = useRequestSnap();
-  const invokeSnap = useInvokeSnap();
-
-  const isMetaMaskReady = isLocalSnap(defaultSnapOrigin)
-    ? isFlask
-    : snapsDetected;
-
-  const handleSendHelloClick = async () => {
-    await invokeSnap({ method: 'hello' });
-  };
 
   return (
     <Container>
       <Heading>
-        Welcome to <Span>qng-snap</Span>
+        Welcome to <Span>qng-export</Span>
       </Heading>
-      <Subtitle>
-        Get started by editing <code>src/index.ts</code>
-      </Subtitle>
+      <Subtitle>Export your UTXO to Balance</Subtitle>
       <CardContainer>
         {error && (
           <ErrorMessage>
             <b>An error happened:</b> {error.message}
           </ErrorMessage>
         )}
-        {!isMetaMaskReady && (
+        {/* {!isMetaMaskReady && (
           <Card
             content={{
               title: 'Install',
@@ -139,8 +112,8 @@ const Index = () => {
             }}
             fullWidth
           />
-        )}
-        {!installedSnap && (
+        )} */}
+        {/* {!installedSnap && (
           <Card
             content={{
               title: 'Connect',
@@ -155,13 +128,12 @@ const Index = () => {
             }}
             disabled={!isMetaMaskReady}
           />
-        )}
-        {shouldDisplayReconnectButton(installedSnap) && (
+        )} */}
+        {/* {shouldDisplayReconnectButton(installedSnap) && (
           <Card
             content={{
-              title: 'Reconnect',
-              description:
-                'While connected to a local running snap this button will always be displayed in order to update the snap if a change is made.',
+              title: 'Reinstall Snap',
+              description: '',
               button: (
                 <ReconnectButton
                   onClick={requestSnap}
@@ -171,27 +143,9 @@ const Index = () => {
             }}
             disabled={!installedSnap}
           />
-        )}
-        <Card
-          content={{
-            title: 'Send Hello message',
-            description:
-              'Display a custom message within a confirmation screen in MetaMask.',
-            button: (
-              <SendHelloButton
-                onClick={handleSendHelloClick}
-                disabled={!installedSnap}
-              />
-            ),
-          }}
-          disabled={!installedSnap}
-          fullWidth={
-            isMetaMaskReady &&
-            Boolean(installedSnap) &&
-            !shouldDisplayReconnectButton(installedSnap)
-          }
-        />
-        {installedSnap && <AACard />}
+        )} */}
+
+        {<StepForm />}
         <Notice>
           <p>
             Please note that the <b>snap.manifest.json</b> and{' '}

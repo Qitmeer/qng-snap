@@ -5,6 +5,10 @@ import {
   HttpRpcClient,
   PaymasterAPI,
   MeerChangeAPI,
+  QngPaymasterAddr,
+  QngAccountFactoryAddr,
+  EntryPointAddr,
+  MeerChangeAddr,
   // calcPreVerificationGas,
 } from '@qng/eip4337-sdk';
 // import type { BigNumberish} from 'ethers';
@@ -30,10 +34,7 @@ class MeerChangePaymasterAPI extends PaymasterAPI {
   async getPaymasterAndData(userOp: any): Promise<string> {
     console.log(userOp);
     // Hack: userOp includes empty paymasterAndData which calcPreVerificationGas requires.
-    const provider = new ethers.providers.Web3Provider(ethereum as any);
-    const network = await provider.getNetwork();
-    const conf = getConfig(network.chainId);
-    return conf.paymasterAddress;
+    return '0x9E17d96DD77Ac79Ab318Ca59556eb00E064a4ac7';
   }
 }
 
@@ -83,16 +84,16 @@ export const crossQngUrl = (chainId: number): string => {
 export const getAbstractAccount = async (
   chainId: number,
 ): Promise<QngAccountAPI> => {
-  const conf = getConfig(chainId);
   const provider = new ethers.providers.Web3Provider(ethereum as any);
   await provider.send('eth_requestAccounts', []);
+  snap.request;
   const owner = provider.getSigner();
-  const paymasterAPI = new MeerChangePaymasterAPI('', conf.entryPointAddress);
+  const paymasterAPI = new MeerChangePaymasterAPI('', EntryPointAddr);
   const aa = new QngAccountAPI({
     provider,
-    entryPointAddress: conf.entryPointAddress,
+    entryPointAddress: EntryPointAddr,
     owner,
-    factoryAddress: conf.factoryAddress,
+    factoryAddress: '0x0b194F82f0fDE38CC6a5d995b59adBD377523641',
     paymasterAPI,
   });
   return aa;
@@ -119,11 +120,10 @@ export const getCurrentPriorityFee = async (): Promise<ethers.BigNumber> => {
 export const getMeerChangeABI = async (
   chainId: number,
 ): Promise<MeerChangeAPI> => {
-  const conf = getConfig(chainId);
   const provider = new ethers.providers.Web3Provider(ethereum as any);
   const meerchageABI = new MeerChangeAPI({
     provider,
-    meerchangeAddr: conf.meerchangeAddress,
+    meerchangeAddr: '0x18D86ABE638066254878Bd4964E048707d593ef3',
   });
   return meerchageABI;
 };
@@ -131,10 +131,5 @@ export const getMeerChangeABI = async (
 export const bundlerProvider = async (
   chainId: number,
 ): Promise<HttpRpcClient> => {
-  const conf = getConfig(chainId);
-  return new HttpRpcClient(
-    bundlerUrl(chainId),
-    conf.entryPointAddress,
-    chainId,
-  );
+  return new HttpRpcClient(bundlerUrl(chainId), EntryPointAddr, chainId);
 };

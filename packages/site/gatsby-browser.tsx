@@ -3,7 +3,9 @@ import { StrictMode } from 'react';
 
 import { App } from './src/App';
 import { Root } from './src/Root';
+import { Buffer } from 'buffer';
 
+window.Buffer = Buffer;
 export const wrapRootElement: GatsbyBrowser['wrapRootElement'] = ({
   element,
 }) => (
