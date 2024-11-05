@@ -46,15 +46,9 @@ export const Header = ({
     <HeaderWrapper>
       <LogoWrapper>
         <SnapLogo color={theme.colors.icon?.default} size={36} />
-        <Title>qng-export</Title>
+        <Title>Qng-Amount-Recovery-Tool</Title>
       </LogoWrapper>
-      <RightContainer>
-        <Toggle
-          onToggle={handleToggleClick}
-          defaultChecked={getThemePreference()}
-        />
-        {/* <HeaderButtons /> */}
-      </RightContainer>
+      <RightContainer>{/* <HeaderButtons /> */}</RightContainer>
     </HeaderWrapper>
   );
 };

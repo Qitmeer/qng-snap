@@ -1,11 +1,14 @@
+/* eslint-disable import/no-nodejs-modules */
+import { Buffer } from 'buffer';
 import type { GatsbyBrowser } from 'gatsby';
 import { StrictMode } from 'react';
 
 import { App } from './src/App';
 import { Root } from './src/Root';
-import { Buffer } from 'buffer';
 
-window.Buffer = Buffer;
+if (typeof window !== 'undefined') {
+  window.Buffer = window.Buffer || require("buffer").Buffer;
+}
 export const wrapRootElement: GatsbyBrowser['wrapRootElement'] = ({
   element,
 }) => (

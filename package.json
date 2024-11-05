@@ -26,6 +26,7 @@
     "test": "yarn workspace qngsnap run test"
   },
   "dependencies": {
+    "@material-ui/core": "^4.12.4",
     "@metamask/superstruct": "^3.1.0"
   },
   "devDependencies": {

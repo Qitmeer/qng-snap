@@ -23,7 +23,6 @@ const _fetchJsonRequest = async (
     body: JSON.stringify(body),
   });
   const result = await re.json();
-  console.log('-----------------', result);
   try {
     return result.result;
   } catch (error) {

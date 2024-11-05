@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prettier/prettier */
 // import type { UserOperationStruct } from '@account-abstraction/contracts';
 import type { PaymasterAPI } from '@qng/eip4337-sdk';
@@ -11,6 +12,7 @@ import {
   HttpRpcClient,
   // calcPreVerificationGas,
 } from '@qng/eip4337-sdk';
+import { Buffer } from 'buffer';
 import { ethers } from 'ethers';
 import * as uint8arraytools from 'uint8array-tools';
 
@@ -18,7 +20,6 @@ import { bundlerUrl } from './config';
 import { qngCheckUTXO } from './qng';
 // import type { BigNumberish} from 'ethers';
 import { handleSignStr } from './sign';
-import { getInputHash } from './utils';
 // entryPointAddress
 // const paymasterUrl = ''; // Optional
 // Extend the Ethereum Foundation's account-abstraction/sdk's basic paymaster
@@ -40,7 +41,7 @@ export const getAbstractAccount = async (): Promise<QngAccountAPI> => {
     throw new Error('No connected accounts found.');
   }
 
-  const owner = await provider.getSigner();
+  const owner = provider.getSigner();
   const paymasterAPI = new MeerChangePaymasterAPI();
   const aa = new QngAccountAPI({
     provider,
@@ -89,6 +90,7 @@ export const createUserOp = async (
   fee: number,
   signature: string,
 ): Promise<any> => {
+  Buffer.from('ff', 'hex');
   const aa = await getAbstractAccount();
   console.log('aa', await aa.getAccountAddress());
   const abi = await getMeerChangeABI();
@@ -113,7 +115,14 @@ export const sendToBundler = async (
   const bp = await bundlerProvider();
   const userOpHash = await bp.sendUserOpToBundler(userOp);
   const aa = await getAbstractAccount();
-  const txhash = await aa.getUserOpReceipt(userOpHash);
+  console.log('userOpHash', userOpHash);
+  let txhash: any;
+  for (let i = 0; i < 3; i++) {
+    txhash = await aa.getUserOpReceipt(userOpHash);
+    if (txhash !== null) {
+      break;
+    }
+  }
   return txhash as string;
 };
 export const checkTxIdSig = async (
