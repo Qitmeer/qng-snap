@@ -1,10 +1,13 @@
 /* eslint-disable import/no-unassigned-import */
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import FirstStep from '../components/Step';
 import './App.css'; // Import your CSS file for styling
 
 const App = () => {
+  useEffect(() => {
+    document.title = 'Qng UTXO Amount Recovery Tool';
+  }, []);
   return (
     <div className="app-container">
       <FirstStep />

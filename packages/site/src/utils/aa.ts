@@ -1,3 +1,4 @@
+/* eslint-disable import/no-nodejs-modules */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable prettier/prettier */
 // import type { UserOperationStruct } from '@account-abstraction/contracts';
@@ -14,7 +15,6 @@ import {
 } from '@qng/eip4337-sdk';
 import { Buffer } from 'buffer';
 import { ethers } from 'ethers';
-import * as uint8arraytools from 'uint8array-tools';
 
 import { bundlerUrl } from './config';
 import { qngCheckUTXO } from './qng';
@@ -25,9 +25,8 @@ import { handleSignStr } from './sign';
 // Extend the Ethereum Foundation's account-abstraction/sdk's basic paymaster
 class MeerChangePaymasterAPI implements PaymasterAPI {
   async getPaymasterAndData(userOp: any): Promise<string> {
-    // console.log(userOp);
     // Hack: userOp includes empty paymasterAndData which calcPreVerificationGas requires.
-    return '0x9E17d96DD77Ac79Ab318Ca59556eb00E064a4ac7';
+    return QngPaymasterAddr;
   }
 }
 
@@ -43,11 +42,19 @@ export const getAbstractAccount = async (): Promise<QngAccountAPI> => {
 
   const owner = provider.getSigner();
   const paymasterAPI = new MeerChangePaymasterAPI();
+  console.log('QngAccountFactoryAddr', QngAccountFactoryAddr);
+  console.log({
+    provider,
+    entryPointAddress: EntryPointAddr,
+    owner,
+    factoryAddress: QngAccountFactoryAddr,
+    paymasterAPI,
+  });
   const aa = new QngAccountAPI({
     provider,
     entryPointAddress: EntryPointAddr,
     owner,
-    factoryAddress: '0x0b194F82f0fDE38CC6a5d995b59adBD377523641',
+    factoryAddress: QngAccountFactoryAddr,
     paymasterAPI,
   });
   return aa;
@@ -62,6 +69,7 @@ export const getCurrentGasPrice = async (): Promise<ethers.BigNumber> => {
 export const getCurrentPriorityFee = async (): Promise<ethers.BigNumber> => {
   const provider = new ethers.providers.Web3Provider(window.ethereum as any);
   const feeData = await provider.getFeeData();
+  console.log(feeData);
   console.log(
     'Max Priority Fee Per Gas:',
     `${ethers.utils.formatUnits(
@@ -90,13 +98,12 @@ export const createUserOp = async (
   fee: number,
   signature: string,
 ): Promise<any> => {
-  Buffer.from('ff', 'hex');
   const aa = await getAbstractAccount();
   console.log('aa', await aa.getAccountAddress());
   const abi = await getMeerChangeABI();
   const data = await abi.encodeExport4337(ops, fee, handleSignStr(signature));
   const userOp = await aa.createSignedUserOp({
-    target: '0x18D86ABE638066254878Bd4964E048707d593ef3',
+    target: MeerChangeAddr,
     value: 0,
     data,
     gasLimit: 200000,

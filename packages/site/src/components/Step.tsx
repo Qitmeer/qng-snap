@@ -8,14 +8,23 @@
 /* eslint-disable @typescript-eslint/prefer-for-of */
 /* eslint-disable id-denylist */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { set } from '@metamask/superstruct';
 import { Modal, Button } from 'antd';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as uint8arraytools from 'uint8array-tools';
 
 import { getBalance } from '../utils';
 import { checkTxIdSig, getAbstractAccount, sendToBundler } from '../utils/aa';
 import { getQngBalanceByAddress, getUtxos } from '../utils/qng';
-import { getInputHash, getMultiInputHash } from '../utils/utils';
+import {
+  currentDateTime,
+  getInputHash,
+  getMultiInputHash,
+  isChrome,
+  isFirefox,
+} from '../utils/utils';
+import HistoryTx, { HISTORYKEY } from './History';
+import Loader from './Loader';
 import ModalProgress from './Progress';
 import ModalTurorial from './Tutorial';
 
@@ -23,15 +32,23 @@ const FirstStep = () => {
   const [data, setData] = useState([]);
   const [eoaaddress, setEoaAddress] = useState('');
   const [aaaddress, setAaAddress] = useState('');
+  const [aaBalance, setAaBalance] = useState('0');
   const [qngaddress, setQngAddress] = useState('');
   const [eoaBalance, setEOABalance] = useState('0');
   const [qngBalance, setQngBalance] = useState('0');
-  const [aaBalance, setAaBalance] = useState('0');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showBalance, setShowBalance] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [checkboxes, setCheckboxes] = useState({} as any);
+  const [loading, setLoading] = useState(false);
+  const [isMetaMaskInstalled, setIsMetaMaskInstalled] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [originNumber, setOriginNumber] = useState(0);
+  const [increment, setIncrement] = useState(0);
+  const [isScaled, setIsScaled] = useState(false);
+  const [lasttxid, setLasttxid] = useState('');
   const toggleModal = () => {
     setShowModal(!showModal);
   };
@@ -41,6 +58,7 @@ const FirstStep = () => {
     message: '',
     isSuccess: false,
   });
+
   const showSuccess = async (msg: string) => {
     return new Promise((resolve: any) => {
       setModalContent({
@@ -64,7 +82,26 @@ const FirstStep = () => {
       handleResolve.current = resolve;
     });
   };
+  useEffect(() => {
+    if (!isChrome() && !isFirefox()) {
+      setModalContent({
+        title: 'Alert',
+        message: 'brower not supported, please use chrome or firefox',
+        isSuccess: false,
+      });
+      setIsModalVisible(true);
+      return;
+    }
+    const checkMetaMask = () => {
+      if (typeof window !== 'undefined' && window.ethereum) {
+        setIsMetaMaskInstalled(true);
+      } else {
+        setIsMetaMaskInstalled(false);
+      }
+    };
 
+    checkMetaMask();
+  }, []);
   const handleOK = () => {
     setIsModalVisible(false);
     if (handleResolve.current) {
@@ -77,7 +114,7 @@ const FirstStep = () => {
       handleResolve.current(false);
     }
   };
-  const reloadBalance = async () => {
+  const reloadBalance = async (isExport: boolean) => {
     setIsDisabled(true);
     toggleModal();
     const utxos = (await getUtxos(qngaddress)) as [];
@@ -108,14 +145,45 @@ const FirstStep = () => {
     setAaAddress(aaAddress);
     setAaBalance(await getBalance(aaAddress));
     setEoaAddress(window.ethereum.selectedAddress as string);
-    setEOABalance(await getBalance(window.ethereum.selectedAddress as string));
+    const eoaBa = await getBalance(window.ethereum.selectedAddress as string);
+    if (isExport) {
+      if (originNumber !== Number(eoaBa)) {
+        const timer = setInterval(() => {
+          setEOABalance((prevCount: any) => {
+            if (Number(prevCount) < Number(eoaBa)) {
+              return Math.min(Number(eoaBa), Number(prevCount) + 1); // 增加 1
+            }
+            clearInterval(timer); //
+            return prevCount;
+          });
+        }, 50);
+      }
+    } else {
+      setEOABalance(eoaBa);
+    }
+    //
     setIsDisabled(false);
     setTimeout(() => {
       setShowModal(false);
       setData(rows as never[]);
+      if (isExport) {
+        setShowBalance(true);
+        setTimeout(() => {
+          setShowBalance(false);
+        }, 60000);
+      }
     }, 1500);
   };
+  const Add = (a: number, b: number) => {
+    return Number(a) + Number(b);
+  };
   const handleRecoveryClick = async () => {
+    if (!isMetaMaskInstalled) {
+      await showError(
+        'Please Install MetaMask Plugins.see https://support.metamask.io/zh-cn/getting-started/getting-started-with-metamask/',
+      );
+      return;
+    }
     if (!qngaddress) {
       // eslint-disable-next-line no-alert
       await showError('Please Enter your wallet qng address.');
@@ -198,7 +266,7 @@ const FirstStep = () => {
           }
         }
 
-        await reloadBalance();
+        await reloadBalance(false);
         localStorage.setItem(qngaddress, from);
         return;
       }
@@ -218,7 +286,11 @@ const FirstStep = () => {
       [name]: checked,
     }));
   };
-
+  const addNewTx = (row: any) => {
+    const storedData = localStorage.getItem(HISTORYKEY);
+    const data = [row, ...(storedData ? JSON.parse(storedData) : [])];
+    localStorage.setItem(HISTORYKEY, JSON.stringify(data));
+  };
   const handleCheckAll = (event: { target: { checked: any } }) => {
     const isChecked = event.target.checked;
     const newCheckedItems = Object.keys(checkboxes).reduce((acc: any, key) => {
@@ -237,6 +309,10 @@ const FirstStep = () => {
 
     try {
       let ops = '';
+      let utxodesc = '';
+      let exportAmount = 0;
+      let fee = 30000;
+      setShowBalance(false);
       if (selectedOptions.length <= 0) {
         // all
         // eslint-disable-next-line no-alert
@@ -245,7 +321,12 @@ const FirstStep = () => {
           const txid = v.txid as string;
           const idx = v.idx as number;
           ops = `${ops + txid}:${idx},`;
+          utxodesc = `${utxodesc}txid:${txid},idx:${idx},amount:${
+            Number(v.amount) / 1e8
+          }-`;
+          exportAmount += Number(v.amount);
         }
+        fee *= data.length;
       } else {
         console.log('selectedOptions', selectedOptions);
         for (let i = 0; i < selectedOptions.length; i++) {
@@ -253,12 +334,17 @@ const FirstStep = () => {
           const txid = arr[0] as string;
           const idx = arr[1] as number;
           ops = `${ops + txid}:${idx},`;
+          utxodesc = `${utxodesc}txid:${txid},idx:${idx},amount:${
+            Number(arr[2]) / 1e8
+          }-`;
+          exportAmount += Number(arr[2]);
         }
+        fee *= selectedOptions.length;
       }
       setIsDisabled(true);
       ops = ops.substring(0, ops.length - 1);
+      utxodesc = utxodesc.substring(0, utxodesc.length - 1);
       console.log(ops);
-      const fee = 10000 * selectedOptions.length;
       const inp = getMultiInputHash(ops, fee);
       const accounts = (await window.ethereum.request({
         method: 'eth_accounts',
@@ -275,22 +361,56 @@ const FirstStep = () => {
         setIsDisabled(false);
         return;
       }
+      const actualAmount = (exportAmount - fee) / 1e8;
+      setIncrement(actualAmount);
+      setOriginNumber(eoaBalance as unknown as number);
+      setLoading(true);
       const res = await sendToBundler(ops, fee, sign);
+      setLoading(false);
       await showSuccess(`Send success,txid:${res}`);
-      await reloadBalance();
+      if (res !== null && res !== undefined && res !== '') {
+        addNewTx({
+          txhash: res,
+          to: eoaaddress,
+          utxos: utxodesc,
+          amount: actualAmount,
+          txtime: currentDateTime(),
+          fee: fee / 1e8,
+        });
+        await reloadBalance(true);
+        setLasttxid(res);
+      }
       console.log(res);
     } catch (er: any) {
       await showError(`Send fail:${er.message}`);
       console.error(er);
+      setLoading(false);
     }
     setIsDisabled(false);
   };
   const toggleTuorial = () => {
     setShowTutorial(!showTutorial);
   };
-
+  const tradeHistory = () => {
+    setShowHistory(!showHistory);
+    // setIncrement(100);
+    // setOriginNumber(10);
+    setShowBalance(true);
+  };
+  const toggleScale = () => {
+    const timer = setInterval(() => {
+      setIsScaled((prev) => !prev);
+    }, 1000);
+    setTimeout(() => {
+      clearInterval(timer);
+    }, 3000);
+  };
   return (
     <div>
+      {/* <div className="App">
+        <button onClick={tradeHistory}>show history</button>
+      </div> */}
+      {loading && <Loader increment={increment} originNumber={originNumber} />}
       <button className="submit-button" onClick={toggleTuorial}>
         Click to view tutorial
       </button>
@@ -339,7 +459,7 @@ const FirstStep = () => {
             </p>
             <p>
               <label className="subtitle">UTXO Amount:</label>
-              <label className="text hightlight">{qngBalance} Meer</label>{' '}
+              <label className="text hightlight">{qngBalance} MEER</label>{' '}
             </p>
             <p>
               <label className="subtitle">Connected EOA Address:</label>
@@ -347,15 +467,37 @@ const FirstStep = () => {
             </p>
             <p>
               <label className="subtitle">EOA Address Balance:</label>
-              <label className="text hightlight">{eoaBalance} Meer</label>{' '}
-            </p>
-            <p>
-              <label className="subtitle">AA Address of the EOA:</label>
-              <label className="text hightlight">{aaaddress} </label>{' '}
-            </p>
-            <p>
-              <label className="subtitle">AA Address Balance:</label>
-              <label className="text hightlight">{aaBalance} Meer</label>{' '}
+              <label
+                // className={`text hightlight ${isScaled ? 'box scaled' : ''}`}
+                className={`text hightlight`}
+              >
+                {eoaBalance} MEER
+              </label>{' '}
+              {showBalance && (
+                <div className="alert ">
+                  <button
+                    className="alert-close-button"
+                    onClick={() => setShowBalance(false)}
+                  >
+                    X
+                  </button>
+                  <p>Your Origin EOA Balance: {originNumber} MEER</p>
+                  <p>Your EOA account had received : +{increment} MEER</p>
+                  {/* <p>
+                    Current EOA Balance is : {originNumber}+ {increment} =
+                    {Add(originNumber, increment)} MEER
+                  </p> */}
+                  <p>
+                    txid:{' '}
+                    <a
+                      href={`https://qng.qitmeer.io/tx/${lasttxid}`}
+                      target="_blank"
+                    >
+                      {lasttxid}
+                    </a>
+                  </p>
+                </div>
+              )}
             </p>
           </p>
           <div className="input-container">
@@ -370,11 +512,17 @@ const FirstStep = () => {
             <button
               className="submit-button"
               disabled={isDisabled}
-              onClick={reloadBalance}
+              onClick={async () => reloadBalance(false)}
             >
               Reload
             </button>
-
+            <button
+              className="submit-button"
+              disabled={isDisabled}
+              onClick={tradeHistory}
+            >
+              History
+            </button>
             <button
               className="submit-button"
               onClick={() => {
@@ -387,54 +535,58 @@ const FirstStep = () => {
           </div>
         </div>
       )}
+
       <div className="table-container">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>
-                <input
-                  type="checkbox"
-                  className="checkbox"
-                  checked={allChecked}
-                  onChange={handleCheckAll}
-                />
-                {'Select/Deselect All'}
-              </th>
-              <th>txid</th>
-              <th>idx</th>
-              <th>amount(MEER)</th>
-              <th>status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((row: any, index) => (
-              <tr key={index}>
-                <td>
+        {showHistory && <HistoryTx />}
+        {!showHistory && (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>
                   <input
-                    className="checkbox"
                     type="checkbox"
-                    value={row.v}
-                    checked={checkboxes[row.v]}
-                    onChange={handleCheckItem}
-                    name={row.v}
-                  />{' '}
-                  {index + 1}
-                </td>
-                <td>
-                  <a
-                    href={`https://meerscan.io/tx/${row.txid}`}
-                    target="_blank"
-                  >
-                    {row.txid}
-                  </a>
-                </td>
-                <td>{row.idx}</td>
-                <td>{row.amount}</td>
-                <td>available</td>
+                    className="checkbox"
+                    checked={allChecked}
+                    onChange={handleCheckAll}
+                  />
+                  {'Select/Deselect All'}
+                </th>
+                <th>txid</th>
+                <th>idx</th>
+                <th>amount(MEER)</th>
+                <th>status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {data.map((row: any, index) => (
+                <tr key={index}>
+                  <td>
+                    <input
+                      className="checkbox"
+                      type="checkbox"
+                      value={row.v}
+                      checked={checkboxes[row.v]}
+                      onChange={handleCheckItem}
+                      name={row.v}
+                    />{' '}
+                    {index + 1}
+                  </td>
+                  <td>
+                    <a
+                      href={`https://meerscan.io/tx/${row.txid}`}
+                      target="_blank"
+                    >
+                      {row.txid}
+                    </a>
+                  </td>
+                  <td>{row.idx}</td>
+                  <td>{row.amount}</td>
+                  <td>available</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

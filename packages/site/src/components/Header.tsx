@@ -46,7 +46,9 @@ export const Header = ({
     <HeaderWrapper>
       <LogoWrapper>
         <SnapLogo color={theme.colors.icon?.default} size={36} />
-        <Title>Qng-Amount-Recovery-Tool</Title>
+        <a href="/">
+          <Title>Qng-Amount-Recovery-Tool</Title>
+        </a>
       </LogoWrapper>
       <RightContainer>{/* <HeaderButtons /> */}</RightContainer>
     </HeaderWrapper>

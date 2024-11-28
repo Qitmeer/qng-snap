@@ -78,7 +78,7 @@
 }
 .close-button {
   position: fixed;
-  top: 20%;
+  top: 22%;
   left: 72%;
   width: 40px;
   background: black;
@@ -159,4 +159,48 @@ a:visited {
 
 a:active {
   color: #ff5722;
+}
+.box {
+  display: flex;
+  width: auto;
+  align-items: center;
+  justify-content: center;
+  background-color: skyblue;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.scaled {
+  transform: scale(1.5);
+}
+.alert {
+  background-color: #ffcc00;
+  color: #333;
+  padding: 20px;
+  border: 2px solid #ff9900;
+  border-radius: 5px;
+  font-weight: bold;
+  position: relative;
+}
+
+.alert::after {
+  content: '!';
+  font-size: 24px;
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  color: red;
+}
+.alert-close-button {
+  position: absolute; /* 绝对定位 */
+  top: 10px; /* 距离顶部10px */
+  right: 10px; /* 距离右边10px */
+  background: transparent; /* 背景透明 */
+  border: none; /* 无边框 */
+  color: #aaa; /* 字体颜色 */
+  font-size: 20px; /* 字体大小 */
+  cursor: pointer; /* 鼠标悬停时的光标 */
+}
+.alert-close-button:hover {
+  color: #f00; /* 鼠标悬停时变化的颜色 */
 }

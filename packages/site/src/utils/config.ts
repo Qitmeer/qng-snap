@@ -1,4 +1,5 @@
-const RPC_URT = `http://127.0.0.1:8081`;
+/* eslint-disable no-restricted-globals */
+const RPC_URT = process.env.SNAP_ORIGIN ?? `https://127.0.0.1`;
 export const bundlerUrl = (): string => {
   return `${RPC_URT}/bundler`;
 };
