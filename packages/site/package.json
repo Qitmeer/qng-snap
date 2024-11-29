@@ -35,7 +35,7 @@
     "@mui/material": "^6.1.7",
     "@noble/hashes": "^1.4.0",
     "@qng/eip4337-contracts": "0.6.2",
-    "@qng/eip4337-sdk": "0.6.11",
+    "@qng/eip4337-sdk": "0.6.12",
     "@qng/meerchange-contracts": "0.0.4",
     "@types/base-x": "^3.0.6",
     "antd": "^5.21.1",
