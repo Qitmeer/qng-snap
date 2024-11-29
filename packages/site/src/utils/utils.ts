@@ -3,36 +3,29 @@
 import * as uint8arraytools from 'uint8array-tools';
 
 export const currentDateTime = () => {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
 
-    // 格式化为字符串
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
-// eslint-disable-next-line jsdoc/require-returns
-/**
- *
- * @param arrays
- */
-function mergeUint8Arrays(arrays: any[]) {
-  const totalLength = arrays.reduce((acc, curr) => acc + curr.length, 0);
+export const mergeUint8Arrays = (arrs: any[]) => {
+  const totalLength = arrs.reduce((acc, curr) => acc + curr.length, 0);
 
   const mergedArray = new Uint8Array(totalLength);
 
   let offset = 0;
-  arrays.forEach((array) => {
-    mergedArray.set(array, offset);
-    offset += array.length;
+  arrs.forEach((arr) => {
+    mergedArray.set(arr, offset);
+    offset += arr.length;
   });
 
   return mergedArray;
-}
+};
 export const getInputHash = (
   txid: string,
   idx: number,

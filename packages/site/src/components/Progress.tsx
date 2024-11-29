@@ -1,7 +1,7 @@
 /* eslint-disable no-plusplus */
 import React, { useEffect, useState } from 'react';
 
-const ModalProgress = ({ onClose }) => {
+const ModalProgress = () => {
   const [progress, setProgress] = useState(100);
 
   useEffect(() => {

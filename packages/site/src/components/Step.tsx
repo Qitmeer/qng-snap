@@ -8,7 +8,6 @@
 /* eslint-disable @typescript-eslint/prefer-for-of */
 /* eslint-disable id-denylist */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { set } from '@metamask/superstruct';
 import { Modal, Button } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import * as uint8arraytools from 'uint8array-tools';
@@ -28,7 +27,7 @@ import Loader from './Loader';
 import ModalProgress from './Progress';
 import ModalTurorial from './Tutorial';
 
-const FirstStep = () => {
+const Step = () => {
   const [data, setData] = useState([]);
   const [eoaaddress, setEoaAddress] = useState('');
   const [aaaddress, setAaAddress] = useState('');
@@ -592,4 +591,4 @@ const FirstStep = () => {
   );
 };
 
-export default FirstStep;
+export default Step;

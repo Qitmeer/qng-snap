@@ -1,4 +1,3 @@
-import * as uint8arraytools from 'uint8array-tools';
 import { trimHexPrefix } from './utils';
 
 export const handleSignStr = (sign: string): string => {

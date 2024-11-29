@@ -1,7 +1,7 @@
 /* eslint-disable import/no-unassigned-import */
 import React, { useEffect } from 'react';
 
-import FirstStep from '../components/Step';
+import Step from '../components/Step';
 import './App.css'; // Import your CSS file for styling
 
 const App = () => {
@@ -10,7 +10,7 @@ const App = () => {
   }, []);
   return (
     <div className="app-container">
-      <FirstStep />
+      <Step />
     </div>
   );
 };

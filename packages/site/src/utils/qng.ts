@@ -82,10 +82,10 @@ export const qngAddWatchAddr = async (addr: string): Promise<void> => {
 export const qngCheckUTXO = async (
   txid: string,
   idx: number,
-  sig: string,
+  sign: any,
 ): Promise<string> => {
   try {
-    const ret = await _qngSend('qng_checkUTXO', [txid, Number(idx), sig]);
+    const ret = await _qngSend('qng_checkUTXO', [txid, Number(idx), sign]);
     console.log('result', ret);
     return ret;
   } catch (error) {
