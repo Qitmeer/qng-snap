@@ -1,10 +1,55 @@
-# TypeScript Example Snap Front-end
+# Qng-Amount-Recovery-Tool
 
 This project was bootstrapped with [Gatsby](https://www.gatsbyjs.com/).
+
+## Node Version
+
+### `Node > 18`
+
+# Dependence
+
+### 1. Run Qng Node , see https://github.com/Qitmeer/qng or use public rpc service
+
+### 2. Run Bundler service , see https://github.com/eth-infinitism/bundler . checkout tag v0.6.0
+
+- update the config file in `packages/bundler/localconfig/bundler.config.json`
+  `network` is the qng rpc server
+  `entryPoint` can see https://github.com/Qitmeer/eip4337-account-abstraction/blob/v0.6-qng/contracts/address.ts
+  `beneficiary` is your bundler address which can receive the left fee.
+- run bundler
+  `yarn && yarn preprocess`
+  `yarn run bundler --unsafe`
+
+### 3. start your nginx proxy server
+
+```
+server {
+        listen 443 ssl;
+        # Add index.php to the list if you are using PHP
+        index index.html index.htm index.nginx-debian.html;
+        ssl_certificate ssl/myserver.crt;
+        ssl_certificate_key ssl/myserver.key;
+        server_name 127.0.0.1;
+        root /opt/qng-snap/packages/site/public;
+        location /qng {
+                proxy_pass http://127.0.0.1:1234/; # qng server rpc
+        }
+        location /bundler {
+                proxy_pass http://127.0.0.1:3000/rpc; # bundler server rpc
+        }
+}
+
+```
 
 ## Available Scripts
 
 In the project directory, you can run:
+
+### `cd packages/site`
+
+### `npm install buffer`
+
+### `yarn install`
 
 ### `yarn start`
 
@@ -31,6 +76,8 @@ Gatsby has built-in support for loading environment variables into the browser a
 In development, Gatsby will load environment variables from a file named `.env.development`. For builds, it will load from `.env.production`.
 
 By default you can use the `SNAP_ORIGIN` variable (used in `src/config/snap.ts`) to define a production origin for you snap (eg. `npm:MyPackageName`). If not defined it will defaults to `local:http://localhost:8080`.
+
+By default you can use the `PROXY_SERVER` variable (used in `src/utils/config.ts`) to define a production origin for you nginx proxy server. If not defined it will defaults to `https://127.0.0.1`. the nginx proxy server need https
 
 A `.env` file template is available, to use it rename `.env.production.dist` to `.env.production`
 

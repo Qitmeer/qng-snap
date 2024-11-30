@@ -1,9 +1,6 @@
 import styled, { useTheme } from 'styled-components';
 
-import { getThemePreference } from '../utils';
-import { HeaderButtons } from './Buttons';
 import { SnapLogo } from './SnapLogo';
-import { Toggle } from './Toggle';
 
 const HeaderWrapper = styled.header`
   display: flex;
@@ -36,26 +33,18 @@ const RightContainer = styled.div`
   align-items: center;
 `;
 
-export const Header = ({
-  handleToggleClick,
-}: {
-  handleToggleClick(): void;
-}) => {
+export const Header = () => {
   const theme = useTheme();
 
   return (
     <HeaderWrapper>
       <LogoWrapper>
         <SnapLogo color={theme.colors.icon?.default} size={36} />
-        <Title>qng-snap</Title>
+        <a href="/">
+          <Title>Qng-Amount-Recovery-Tool</Title>
+        </a>
       </LogoWrapper>
-      <RightContainer>
-        <Toggle
-          onToggle={handleToggleClick}
-          defaultChecked={getThemePreference()}
-        />
-        <HeaderButtons />
-      </RightContainer>
+      <RightContainer>{/* <HeaderButtons /> */}</RightContainer>
     </HeaderWrapper>
   );
 };

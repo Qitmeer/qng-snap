@@ -2,6 +2,7 @@ import type {
   EIP6963AnnounceProviderEvent,
   MetaMaskInpageProvider,
 } from '@metamask/providers';
+import { ethers } from 'ethers';
 
 /**
  * Check if the current provider supports snaps by calling `wallet_getSnaps`.
@@ -23,6 +24,11 @@ export async function hasSnapsSupport(
     return false;
   }
 }
+export const getBalance = async (address: string): Promise<string> => {
+  const provider = new ethers.providers.Web3Provider(window.ethereum as any);
+  const balance = await provider.getBalance(address);
+  return ethers.utils.formatEther(balance);
+};
 
 /**
  * Get a MetaMask provider using EIP6963. This will return the first provider

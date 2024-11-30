@@ -90,7 +90,7 @@ export const ReconnectButton = (props: ComponentProps<typeof Button>) => {
   return (
     <Button {...props}>
       <FlaskFox />
-      <ButtonText>Reconnect</ButtonText>
+      <ButtonText>Reinstall</ButtonText>
     </Button>
   );
 };
